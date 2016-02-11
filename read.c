@@ -36,7 +36,6 @@ void add_element(struct list *mylist, char *new_ins)
 		}
 		aux->next=new;
 		mylist->number_element++;
-		printf("%d",mylist->number_element);
 	}
 }
 
@@ -137,14 +136,16 @@ int main() {
 	struct list *arg_list;
 	struct cell *ins;
 //	struct cell *aux;
-	int i=0;
+	
 	
 	arg_list=(struct list *) malloc (sizeof(struct list));
 	arg_list->first=NULL;
 	arg_list->number_element=0;
-  
+	
+	free(arg_list);
   
 	do{
+	int i=0;
 	//La linea de comandos
 		text=read_line();
 	//	text2=strdup(text);
@@ -159,9 +160,9 @@ int main() {
 		ins_list=tokenizar(text, "|");
 		print(ins_list);
 		
-		free(arg_list);
-		ins=ins_list->first;
 		
+		ins=ins_list->first;
+		printf("\nee:\n%d",ins_list->number_element);
 		while(i<ins_list->number_element){
 			arg_list=tokenizar(ins->ins, " ");
 			print(arg_list);
