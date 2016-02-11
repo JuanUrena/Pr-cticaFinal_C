@@ -161,6 +161,7 @@ int main() {
 		print(ins_list);
 		
 		
+		
 		ins=ins_list->first;
 		printf("\nee:\n%d",ins_list->number_element);
 		while(i<ins_list->number_element){
