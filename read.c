@@ -3,19 +3,39 @@
 #include <string.h>
 #define BUFFERSIZE 10
 
-int main() {
-  char *text = calloc(1,1), buffer[BUFFERSIZE];
-  printf("Enter a message: \n");
-  while( fgets(buffer, BUFFERSIZE , stdin) ) /* break with ^D or ^Z */
-  {
-  
-    text = realloc( text, strlen(text)+1+strlen(buffer) );
-    strcat( text, buffer ); /* note a '\n' is appended here everytime */
+char* read_line(){
+
+	char *line=calloc(1,1);
+	char buffer[BUFFERSIZE];
+	
+	printf("Enter a message: \n");
+	
+	while(fgets(buffer, BUFFERSIZE , stdin) ){
+  	
+    	line = realloc(line, strlen(line)+1+strlen(buffer) );
+    	strcat(line, buffer);
     
-    if (buffer[strlen(buffer)-1]=='\n'){
-    	printf("\ntext:\n%s",text);
+    	if (buffer[strlen(buffer)-1]=='\n'){
+    		return line;
     	}
     
+  	}
+  	return line;
+}
+
+
+
+
+
+int main() {
+  char *text;
+  
+  
+  
+  while(1==1){
+		text=read_line();
+		printf("\ntext:\n%s",text);
+		free(text);			    
   }
   
   return 0;
