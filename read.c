@@ -8,10 +8,14 @@ struct list{
 	int number_element;
 };
 
-
 struct cell{
 	char *ins;
 	struct cell *next;
+};
+
+struct comands{
+	struct list *list;
+	struct comands *next;
 };
 
 void add_element(struct list *mylist, char *new_ins)
@@ -66,7 +70,7 @@ char* read_line(){
     	}
     
   	}
-  	printf("\n1:\n%s",line);
+  	//printf("\n1:\n%s",line);
   	return line;
 }
 
@@ -78,7 +82,7 @@ struct list* tokenizar(char *line, char *cut)
 	mylist->first=NULL;
 	mylist->number_element=0;
 
-	printf("\n2:\n%s",line);
+	//printf("\n2:\n%s",line);
 	char *copy = (char *)malloc(strlen(line) + 1);
 	strcpy(copy, line);
 	char *token;
@@ -93,26 +97,37 @@ struct list* tokenizar(char *line, char *cut)
    return mylist;
 	
 } 
-
 void print(struct list *mylist){
 	
 	struct cell *aux;
 	int i=0;
 	aux=mylist->first;
-	printf("\nd:\n%d",mylist->number_element);
+	//printf("\nd:\n%d",mylist->number_element);
 	while(i<mylist->number_element){
-		printf("\ntoken:\n%s",aux->ins);
+		printf("\n%d:%s\n",i, aux->ins);
 		aux=aux->next;
 		i++;
 	} 
 }
+
+void print_all(struct comands *cmdlist){
+	struct comands *aux;
+	aux=cmdlist;
+	while(aux){
+		printf("\nNuevo comando\n");
+		print(aux->list);
+		aux=aux->next;
+	} 
+}
+	
+
+
 
 void free_list(struct list *mylist)
 {
 	struct cell *aux;
 	struct cell *aux2;
 	
-	aux=mylist->first;
 	aux2=mylist->first;
 	
 	while (aux2!=NULL){
@@ -124,7 +139,16 @@ void free_list(struct list *mylist)
 	free(mylist);
 }
 
-
+void free_all(struct comands *cmdlist){
+	struct comands *aux;
+	
+	
+	while(cmdlist){
+		aux=cmdlist->next;
+		free(cmdlist);
+		cmdlist=aux;
+	}
+}
 
 
 int main() {
@@ -135,17 +159,18 @@ int main() {
 	struct list *ins_list;
 	struct list *arg_list;
 	struct cell *ins;
-//	struct cell *aux;
-	
-	
-	arg_list=(struct list *) malloc (sizeof(struct list));
-	arg_list->first=NULL;
-	arg_list->number_element=0;
-	
-	free(arg_list);
+//	struct list *comand;
+	struct comands *list_comand;
+	struct comands *list_comand2;
+	struct comands *aux;	
+//	struct cell *aux;	
+
   
 	do{
-	int i=0;
+		list_comand=NULL;
+		arg_list=(struct list *) malloc (sizeof(struct list));
+		free(arg_list);
+		int i=0;
 	//La linea de comandos
 		text=read_line();
 	//	text2=strdup(text);
@@ -161,15 +186,36 @@ int main() {
 		print(ins_list);
 		
 		
-		
+	//obtengo para cada instruccion su lista de argumentos. 
 		ins=ins_list->first;
-		printf("\nee:\n%d",ins_list->number_element);
+		//printf("\nee:\n%d",ins_list->number_element);
 		while(i<ins_list->number_element){
+			
 			arg_list=tokenizar(ins->ins, " ");
-			print(arg_list);
+			
+			if(!list_comand){
+				printf("SE AÑADE EL PRIMER ELEMENTO");
+				list_comand=(struct comands *) malloc (sizeof(struct comands));
+				list_comand->list=NULL;
+				list_comand->next=NULL;
+				
+				list_comand->list=arg_list;
+			}else{
+				printf("SE AÑADE OTRO ELEMENTO");
+				list_comand2=list_comand;
+				while (list_comand2){
+					aux=list_comand2;
+					list_comand2=list_comand2->next;
+				}
+				list_comand2=(struct comands *) malloc (sizeof(struct comands));
+				list_comand2->next=NULL;
+				list_comand2->list=arg_list;
+				aux->next=list_comand2;
+			}
+			
 			ins=ins->next;
+			
 			i++;
-			free_list(arg_list);
 		}
 	//	print(ins_list);
 	//	ins=ins_list->first;
@@ -180,10 +226,9 @@ int main() {
 	//	}
 	
 		//printf("\n3:\n%s",text2);
-
-		
+		print_all(list_comand);
+		free_all(list_comand);
 		free_list(ins_list);
-
 		free(text);
 
 	}while(1);
