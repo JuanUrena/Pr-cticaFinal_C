@@ -50,7 +50,9 @@ int main() {
 //	struct list *comand;
 	struct comands *list_comand;
 	struct comands *list_comand2;
-	struct comands *aux;	
+	struct comands *aux;
+	
+	struct param_cmd *cmd_line;	
 //	struct cell *aux;	
 
   
@@ -69,9 +71,13 @@ int main() {
 				printf("\n-----FIN-----");
 	  			return 0;
 			}
+			
+			cmd_line=get_in_out(text);
+			printf("\n%s\n%s\n%s\n",cmd_line->comand, cmd_line->in, cmd_line->out);
+			free(text);
 		//lista de las instrucciones 
-			ins_list=tokenizar(text, "|");
-			print(ins_list);
+			ins_list=tokenizar(cmd_line->comand, "|");
+			//print(ins_list);
 			
 			
 		//obtengo para cada instruccion su lista de argumentos. 
@@ -82,14 +88,14 @@ int main() {
 				arg_list=tokenizar(ins->ins, " ");
 				
 				if(!list_comand){
-					printf("SE AÑADE EL PRIMER ELEMENTO");
+					//printf("SE AÑADE EL PRIMER ELEMENTO");
 					list_comand=(struct comands *) malloc (sizeof(struct comands));
 					list_comand->list=NULL;
 					list_comand->next=NULL;
 					
 					list_comand->list=arg_list;
 				}else{
-					printf("SE AÑADE OTRO ELEMENTO");
+					//printf("SE AÑADE OTRO ELEMENTO");
 					list_comand2=list_comand;
 					while (list_comand2){
 						aux=list_comand2;
@@ -117,7 +123,6 @@ int main() {
 			print_all(list_comand);
 			free_all(list_comand);
 			free_list(ins_list);
-			free(text);
 		}
 
 	}while(1);
