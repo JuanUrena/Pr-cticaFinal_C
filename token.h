@@ -9,23 +9,42 @@ struct param_cmd{
 
 
 struct list* tokenizar(char *line, char *cut);
-struct param_cmd* get_in_out(char *line);
+void get_in_out(char *line);
 
 
-struct param_cmd* get_in_out(char *line){
+void get_in_out(char *line){
 	char *in;
 	char *out;
-	struct param_cmd *param;
+	char *aux=line;
+	//struct param_cmd *param;
 	
-	param=(struct param_cmd *)malloc(sizeof(struct param_cmd ));
+	//param=(struct param_cmd *)malloc(sizeof(struct param_cmd ));
 	
-	in=(char *)malloc(sizeof(strchr(line,'<'))+1);
-	out=(char *)malloc(sizeof(strchr(line,'>'))+1);
+	in=strchr(aux,'<');
+	out=strchr(aux,'>');
 	
-	in=strcpy(in,strchr(line,'<'));
-	out=strcpy(in,strchr(line,'>'));
+	printf("\n\n%zd",strlen(line));
 	
-	if (strlen(in)>strlen(out)){
+	if (in!=NULL && out!=NULL){
+		if (strlen(in)>strlen(out)){
+			printf("Salida:%s\n", strtok(strtok(out,">"),"<"));
+			printf("Entrada:%s\n", strtok(strtok(in,"<"),">"));
+		}else{
+			printf("Entrada:%s\n", strtok(strtok(in,"<"),">"));
+			printf("Salida:%s\n", strtok(strtok(out,">"),"<"));
+			
+		}
+	}else if (in!=NULL){
+		printf("Entrada:%s\n", strtok(in,"<"));
+	}else if (out!=NULL){
+		printf("Salida:%s\n", strtok(out,">"));
+	}
+	//Comprobar si debido a los strtok estoy teniendo leek de memoria, debido a que me modifica mi string?¿?¿
+	free(line);
+	
+	//Codigo siguiente no valido
+	
+	/*if (strlen(in)>strlen(out)){
 		printf("Significa que in esta antes y por tanto in contiene a out");
 		param->out=(char *)malloc(sizeof(strtok(out, ">")+1));
 		strcpy(param->out,strtok(out, ">"));
@@ -53,7 +72,7 @@ struct param_cmd* get_in_out(char *line){
 		strcpy(param->comand, strtok(line,">"));
 		
 	}
-	return param;
+	return param;*/
 };
 
 struct list* tokenizar(char *line, char *cut){

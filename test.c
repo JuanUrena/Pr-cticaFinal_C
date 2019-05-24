@@ -10,7 +10,7 @@ char* read_line(){
 	char *line;
 	line=(char *)calloc(1,1);
 	char buffer[BUFFERSIZE];
-	printf("linea");
+//	printf("linea");
 	if (!line) {
 		fprintf(stderr, "lsh: allocation error\n");
 		exit(EXIT_FAILURE);
@@ -27,12 +27,12 @@ char* read_line(){
 		}
     	strcat(line, buffer);
     	if (buffer[strlen(buffer)-1]=='\n'){
-    		printf("linea1");
+    		//printf("linea1");
     		char *aux=(char *)malloc(sizeof(strtok(line, "\n")+1));
 			strcpy(aux,strtok(line, "\n"));
 			free(line);
     		line=strtok(aux, "\n");
-    		printf("linea");
+    	//	printf("linea");
     		return line;
     	}
     
@@ -45,7 +45,7 @@ int main() {
 	char *text;
 //	char *text2;
 
-	struct param_cmd* mi_param;
+	//struct param_cmd* mi_param;
 
 
 	do{
@@ -60,13 +60,8 @@ int main() {
 				printf("\n-----FIN-----");
 	  			return 0;
 			};	
-			mi_param=get_in_out(text);
-			printf("\n%s\n%s\n%s\n",mi_param->comand, mi_param->in, mi_param->out);
-			
-			free(mi_param->comand);
-			free(mi_param->out);
-			free(mi_param->in);
-			free(mi_param);
+			get_in_out(text);
+			//printf("\n%s\n%s\n%s\n",mi_param->comand, mi_param->in, mi_param->out);
 		};
 		
 	}while(1);
