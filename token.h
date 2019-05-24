@@ -9,44 +9,52 @@ struct param_cmd{
 
 
 struct list* tokenizar(char *line, char *cut);
-void get_in_out(char *line);
+struct param_cmd* get_in_out(char *line);
 
 
-void get_in_out(char *line){
+struct param_cmd* get_in_out(char *line){
 	char *in;
 	char *out;
 	struct param_cmd *param;
 	
-	param=(struct param_cmd *)malloc(sizeof(struct param_cmd));
+	param=(struct param_cmd *)malloc(sizeof(struct param_cmd ));
 	
-	in=strchr(line,'<');
-	out=strchr(line, '>');
+	in=(char *)malloc(sizeof(strchr(line,'<'))+1);
+	out=(char *)malloc(sizeof(strchr(line,'>'))+1);
+	
+	in=strcpy(in,strchr(line,'<'));
+	out=strcpy(in,strchr(line,'>'));
 	
 	if (strlen(in)>strlen(out)){
 		printf("Significa que in esta antes y por tanto in contiene a out");
-		out =strtok(out, ">");
-		param->out=(char *)malloc(sizeof(out)+1);
-		strcpy(param->out,out);
+		param->out=(char *)malloc(sizeof(strtok(out, ">")+1));
+		strcpy(param->out,strtok(out, ">"));
+		free(out);
 		
-		in=strtok(in, "<");
-		in=strtok(in,">");
+		param->in=(char *)malloc(sizeof(strtok(strtok(in, ">"),"<")+1));
+		strcpy(param->in,strtok(strtok(in, ">"),"<"));
+		free(in);
 		
-		param->in=(char *)malloc(sizeof(in)+1);
-		strcpy(param->in,in);
+		param->comand=(char *)malloc(sizeof(strtok(line,"<")+1));
+		strcpy(param->comand, strtok(line,"<"));
+		
 	}else{
 		printf("significa que out es mas grande y es el que contine a in");
 		
-		in =strtok(in, "<");
-		param->in=(char *)malloc(sizeof(in)+1);
-		strcpy(param->in,in);
+		param->in=(char *)malloc(sizeof(strtok(in, "<")+1));
+		strcpy(param->in,strtok(in, "<"));
+		free(in);
 		
-		out=strtok(out, ">");
-		out=strtok(out,"<");
+		param->out=(char *)malloc(sizeof(strtok(strtok(out, "<"),">")+1));
+		strcpy(param->out,strtok(strtok(out, "<"),">"));
+		free(out);
 		
-		param->out=(char *)malloc(sizeof(out)+1);
-		strcpy(param->out,out);
-	};
-} 
+		param->comand=(char *)malloc(sizeof(strtok(line,">")+1));
+		strcpy(param->comand, strtok(line,">"));
+		
+	}
+	return param;
+};
 
 struct list* tokenizar(char *line, char *cut){
 	struct list *mylist;
