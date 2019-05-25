@@ -44,7 +44,8 @@ char* read_line(){
 int main() {
 	char *text;
 //	char *text2;
-
+	struct param_cmd *cmd_line;
+	struct value_var *equal;
 	//struct param_cmd* mi_param;
 
 
@@ -60,8 +61,13 @@ int main() {
 				printf("\n-----FIN-----");
 	  			return 0;
 			};	
-			get_in_out(text);
-			//printf("\n%s\n%s\n%s\n",mi_param->comand, mi_param->in, mi_param->out);
+			cmd_line=get_in_out(text);
+			free(text);
+			equal=check_var_value(cmd_line->comand);
+						
+			if (equal->var){
+				printf("\n%s\n%s\n", equal->variable, equal->value);
+			};
 		};
 		
 	}while(1);

@@ -1,14 +1,17 @@
 struct list{
+//comando, con el numero de aegumentos que lo componene
 	struct cell *first;
 	int number_element;
 };
 
 struct cell{
+//Cada palabra, ins o arg
 	char *ins;
 	struct cell *next;
 };
 
 struct comands{
+//Todos los ins, es mi linea de comandos
 	struct list *list;
 	struct comands *next;
 };

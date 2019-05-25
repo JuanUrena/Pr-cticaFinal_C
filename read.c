@@ -5,7 +5,13 @@
 #include "token.h"
 #define BUFFERSIZE 10
 
+struct my_line{
+//info sobre la linea de comandos que he leido. 
+	struct comands *list_comands;
+	char *input;
+	char *output;
 
+};
 char* read_line(){
 
 	char *line;
@@ -73,56 +79,62 @@ int main() {
 			}
 			
 			cmd_line=get_in_out(text);
-			printf("\n%s\n%s\n%s\n",cmd_line->comand, cmd_line->in, cmd_line->out);
 			free(text);
+			printf("\n%s\n%s\n%s\n",cmd_line->comand, cmd_line->in, cmd_line->out);
 		//lista de las instrucciones 
-			ins_list=tokenizar(cmd_line->comand, "|");
-			//print(ins_list);
+			if (cmd_line->comand){
+				ins_list=tokenizar(cmd_line->comand, "|");
+				//print(ins_list);
 			
 			
-		//obtengo para cada instruccion su lista de argumentos. 
-			ins=ins_list->first;
-			//printf("\nee:\n%d",ins_list->number_element);
-			while(i<ins_list->number_element){
+			//obtengo para cada instruccion su lista de argumentos. 
+				ins=ins_list->first;
+				//printf("\nee:\n%d",ins_list->number_element);
+				while(i<ins_list->number_element){
 				
-				arg_list=tokenizar(ins->ins, " ");
+					arg_list=tokenizar(ins->ins, " ");
 				
-				if(!list_comand){
-					//printf("SE AÑADE EL PRIMER ELEMENTO");
-					list_comand=(struct comands *) malloc (sizeof(struct comands));
-					list_comand->list=NULL;
-					list_comand->next=NULL;
+					if(!list_comand){
+						//printf("SE AÑADE EL PRIMER ELEMENTO");
+						list_comand=(struct comands *) malloc (sizeof(struct comands));
+						list_comand->list=NULL;
+						list_comand->next=NULL;
 					
-					list_comand->list=arg_list;
-				}else{
-					//printf("SE AÑADE OTRO ELEMENTO");
-					list_comand2=list_comand;
-					while (list_comand2){
-						aux=list_comand2;
-						list_comand2=list_comand2->next;
+						list_comand->list=arg_list;
+					}else{
+						//printf("SE AÑADE OTRO ELEMENTO");
+						list_comand2=list_comand;
+						while (list_comand2){
+							aux=list_comand2;
+							list_comand2=list_comand2->next;
+						}
+						list_comand2=(struct comands *) malloc (sizeof(struct comands));
+						list_comand2->next=NULL;
+						list_comand2->list=arg_list;
+						aux->next=list_comand2;
 					}
-					list_comand2=(struct comands *) malloc (sizeof(struct comands));
-					list_comand2->next=NULL;
-					list_comand2->list=arg_list;
-					aux->next=list_comand2;
+				
+					ins=ins->next;
+				
+					i++;
 				}
-				
-				ins=ins->next;
-				
-				i++;
-			}
-		//	print(ins_list);
-		//	ins=ins_list->first;
-		//	while (ins!=NULL){
-		//		aux=ins->next;
-		//		free(ins);
-		//		ins=aux;
-		//	}
+			//	print(ins_list);
+			//	ins=ins_list->first;
+			//	while (ins!=NULL){
+			//		aux=ins->next;
+			//		free(ins);
+			//		ins=aux;
+			//	}
 		
-			//printf("\n3:\n%s",text2);
-			print_all(list_comand);
-			free_all(list_comand);
-			free_list(ins_list);
+				//printf("\n3:\n%s",text2);
+				print_all(list_comand);
+				free_all(list_comand);
+				free_list(ins_list);
+				free(cmd_line->comand);
+				free(cmd_line->in);
+				free(cmd_line->out);
+				free(cmd_line);				
+			}
 		}
 
 	}while(1);

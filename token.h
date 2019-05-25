@@ -2,16 +2,47 @@ struct param_cmd{
 	char *comand;
 	char *in;
 	char *out;
-
 };
 
-
-
+struct value_var{
+	int var;
+	char *variable;
+	char *value;
+};
 
 struct list* tokenizar(char *line, char *cut);
 struct param_cmd* get_in_out(char *line);
+struct value_var* check_var_value(char *ins);
 
 
+struct value_var* check_var_value(char *ins){
+	char *aux;
+	char *var;
+	char *value;
+	struct value_var *param;
+	
+	param=(struct value_var *)malloc(sizeof(struct value_var));
+	
+	aux=strchr(ins, '=');
+	
+	if (aux!=NULL){
+		var=strtok(ins, "=");
+		value=strtok(NULL, "=");
+		if (var && value){
+			param->variable=var;
+			param->value=value;
+			param->var=1;
+			
+			return param;
+		}
+	}
+	
+	param->variable=NULL;
+	param->value=NULL;
+	param->var=0;
+	return param;
+};
+ 
 struct param_cmd* get_in_out(char *line){
 	char *in;
 	char *out;
@@ -19,6 +50,7 @@ struct param_cmd* get_in_out(char *line){
 	struct param_cmd *param;
 	
 	param=(struct param_cmd *)malloc(sizeof(struct param_cmd ));
+	param->comand=NULL;
 	
 	in=strchr(aux,'<');
 	out=strchr(aux,'>');
@@ -29,55 +61,66 @@ struct param_cmd* get_in_out(char *line){
 			//printf("Entrada:%s\n", strtok(strtok(in,"<"),">"));
 			//printf("MSN:%s\n",strtok(line, "<"));
 			
-			param->out=(char *)malloc(sizeof(strtok(strtok(out,">"),"<"))+1);
-			strcpy(param->out,strtok(strtok(out,">"),"<"));
-			param->in=(char *)malloc(sizeof(strtok(strtok(in,"<"),">"))+1);
-			strcpy(param->in,strtok(strtok(in,"<"),">"));
+			//param->out=(char *)malloc(sizeof(strtok(strtok(out,">"),"<"))+1);
+			param->out=strdup(strtok(strtok(out,">"),"<"));
+			//param->in=(char *)malloc(sizeof(strtok(strtok(in,"<"),">"))+1);
+			param->in=strdup(strtok(strtok(in,"<"),">"));
 			
-			param->comand=(char *)malloc(sizeof(strtok(line, "<"))+1);
-			strcpy(param->comand,strtok(line, "<"));
+			if (strlen(line)-1>strlen(strtok(line, "<"))){
+			//param->comand=(char *)malloc(sizeof(strtok(line, "<"))+1);
+				param->comand=strdup(line);
+			}
 			
 		}else{
 			//printf("Entrada:%s\n", strtok(strtok(in,"<"),">"));
 			//printf("Salida:%s\n", strtok(strtok(out,">"),"<"));
 			//printf("MSN:%s\n",strtok(line, ">"));
 			
-			param->in=(char *)malloc(sizeof(strtok(strtok(in,"<"),">"))+1);
-			strcpy(param->in,strtok(strtok(in,"<"),">"));
-			param->out=(char *)malloc(sizeof(strtok(strtok(out,">"),"<"))+1);
-			strcpy(param->out,strtok(strtok(out,">"),"<"));
+			//param->in=(char *)malloc(sizeof(strtok(strtok(in,"<"),">"))+1);
+			param->in=strdup(strtok(strtok(in,"<"),">"));
+			//param->out=(char *)malloc(sizeof(strtok(strtok(out,">"),"<"))+1);
+			param->out=strdup(strtok(strtok(out,">"),"<"));
 			
-			param->comand=(char *)malloc(sizeof(strtok(line, ">"))+1);
-			strcpy(param->comand,strtok(line, ">"));
+			if (strlen(line)-1>strlen(strtok(line, ">"))){
+			//param->comand=(char *)malloc(sizeof(strtok(line, ">"))+1);
+				param->comand=strdup(line);
+			}
 		}
 	}else if (in!=NULL){
 		//printf("Entrada:%s\n", strtok(in,"<"));
 		//printf("MSN:%s\n",strtok(line, "<"));
 		
-		param->in=(char *)malloc(sizeof(strtok(in,"<"))+1);
-		strcpy(param->in,strtok(in,"<"));
+		//param->in=(char *)malloc(sizeof(strtok(in,"<"))+1);
+		param->in=strdup(strtok(in,"<"));
 		
 		param->out=NULL;
 			
-		param->comand=(char *)malloc(sizeof(strtok(line, "<"))+1);
-		strcpy(param->comand,strtok(line, "<"));
+	//	param->comand=(char *)malloc(sizeof(strtok(line, "<"))+1);
+		if (strlen(line)-1>strlen(strtok(line, "<"))){
+			//param->comand=(char *)malloc(sizeof(strtok(line, "<"))+1);
+			param->comand=strdup(line);
+		}
 		
 	}else if (out!=NULL){
 		//printf("Salida:%s\n", strtok(out,">"));
 		//printf("MSN:%s\n",strtok(line, ">"));
 		
-		param->out=(char *)malloc(sizeof(strtok(out,">"))+1);
-		strcpy(param->out,strtok(out,">"));
+		//param->out=(char *)malloc(sizeof(strtok(out,">"))+1);
+		param->out=strdup(strtok(out,">"));
 		
 		param->in=NULL;
 			
-		param->comand=(char *)malloc(sizeof(strtok(line, ">"))+1);
-		strcpy(param->comand,strtok(line, ">"));
+		//param->comand=(char *)malloc(sizeof(strtok(line, ">"))+1);
+		if (strlen(line)-1>strlen(strtok(line, ">"))){
+			//param->comand=(char *)malloc(sizeof(strtok(line, ">"))+1);
+			param->comand=strdup(line);
+		}
 	}else{
 		param->out=NULL;
 		param->in=NULL;
-		param->comand=(char *)malloc(sizeof(line)+1);
-		strcpy(param->comand,line);
+	//	param->comand=(char *)malloc(sizeof(line)+1);
+			
+		param->comand=strdup(line);
 	
 	}
 	//Comprobar si debido a los strtok estoy teniendo leek de memoria, debido a que me modifica mi string?¿?¿
