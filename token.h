@@ -28,18 +28,18 @@ struct value_var* check_var_value(char *ins){
 	if (aux!=NULL){
 		var=strtok(ins, "=");
 		value=strtok(NULL, "=");
-		if (var && value){
-			param->variable=var;
-			param->value=value;
+		if (var && *var==*ins){
+		
 			param->var=1;
 			
-			return param;
+		}else{
+			param->var=0;
 		}
 	}
 	
-	param->variable=NULL;
-	param->value=NULL;
-	param->var=0;
+	param->variable=var;
+	param->value=value;
+
 	return param;
 };
  

@@ -118,6 +118,7 @@ int main() {
 				
 					i++;
 				}
+				
 			//	print(ins_list);
 			//	ins=ins_list->first;
 			//	while (ins!=NULL){
@@ -125,9 +126,25 @@ int main() {
 			//		free(ins);
 			//		ins=aux;
 			//	}
+			
+			//Vamos a comprobar que cada elemento en la lista si es una asignacion de variable
+			
+				 list_comand2=list_comand;
+				 struct value_var *check_var;
+				 while (list_comand2!=NULL){
+				 	check_var=check_var_value(list_comand2->list->first->ins);
+				 	
+				 	if (check_var->var){
+				 		printf("\nAsignacion de Variable\n%s\n%s\n", check_var->variable,check_var->value);
+				 	}else{
+				 		printf("\nEjecución de comando\n");
+				 	}
+				 	list_comand2=list_comand2->next;
+				 }
+				
 		
 				//printf("\n3:\n%s",text2);
-				print_all(list_comand);
+				//print_all(list_comand);
 				free_all(list_comand);
 				free_list(ins_list);
 				free(cmd_line->comand);
