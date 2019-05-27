@@ -33,7 +33,7 @@ char* read_line(){
     	strcat(line, buffer);
     
     	if (buffer[strlen(buffer)-1]=='\n'){
-    		printf("\n%s\n", line);
+    		//printf("\n%s\n", line);
     		line=strtok(line, "\n");
     		return line;
     	}

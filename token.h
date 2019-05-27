@@ -24,16 +24,13 @@ struct value_var* check_var_value(char *ins){
 	param=(struct value_var *)malloc(sizeof(struct value_var));
 	
 	aux=strchr(ins, '=');
-	
+	param->var=0;
 	if (aux!=NULL){
 		var=strtok(ins, "=");
 		value=strtok(NULL, "=");
 		if (var && *var==*ins){
-		
 			param->var=1;
-			
-		}else{
-			param->var=0;
+			printf("AQUI%s", var);	
 		}
 	}
 	

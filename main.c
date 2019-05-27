@@ -4,6 +4,7 @@
 #include "list.h"
 #include "token.h"
 #include "read.h"
+#include "rutes.h"
 
 int main(int argc, char *argv[])
 {
@@ -41,7 +42,7 @@ int main(int argc, char *argv[])
 			
 			cmd_line=get_in_out(text);
 			free(text);
-			printf("\n%s\n%s\n%s\n",cmd_line->comand, cmd_line->in, cmd_line->out);
+			//printf("\n%s\n%s\n%s\n",cmd_line->comand, cmd_line->in, cmd_line->out);
 		//lista de las instrucciones 
 			if (cmd_line->comand){
 				ins_list=tokenizar(cmd_line->comand, "|");
@@ -93,12 +94,16 @@ int main(int argc, char *argv[])
 				 list_comand2=list_comand;
 				 struct value_var *check_var;
 				 while (list_comand2!=NULL){
+				 	getFiles(list_comand2->list);
+				 	//Como hacer el globbing y a la vez la expansion del comando, o quizas deba hacerlo luego sobre valor y value?¿?¿?¿
+
 				 	check_var=check_var_value(list_comand2->list->first->ins);
-				 	
+					printf("AQUI%d", check_var->var); 	
 				 	if (check_var->var){
 				 		printf("\nAsignacion de Variable\n%s\n%s\n", check_var->variable,check_var->value);
 				 	}else{
 				 		printf("\nEjecución de comando\n");
+				 		
 				 	}
 				 	list_comand2=list_comand2->next;
 				 }
