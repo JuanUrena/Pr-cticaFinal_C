@@ -32,7 +32,7 @@ char* env_variable(char *word){
 			aux=(getenv(var));
 			if (aux){
 				printf("VAR\n%s\n", aux);
-				free(word);
+				//free(word);
 				
 				word=strdup(aux);
 				printf("VAR\n%s\n", word);

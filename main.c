@@ -6,6 +6,18 @@
 #include "read.h"
 #include "rutes.h"
 
+void subs_env(struct list *mylist){
+	int i=0;
+	struct cell *aux=mylist->first;
+	
+	while(i<mylist->number_element){
+		aux->ins=env_variable(aux->ins);
+		aux=aux->next;
+		i++;
+	}
+}
+
+
 int main(int argc, char *argv[])
 {
 	char *text;
@@ -14,7 +26,7 @@ int main(int argc, char *argv[])
 	
 	struct list *ins_list;
 	struct list *arg_list;
-	struct list *list_equiality;
+	//struct list *list_equiality;
 	struct cell *ins;
 //	struct list *comand;
 	struct comands *list_comand;
@@ -94,22 +106,25 @@ int main(int argc, char *argv[])
 				 list_comand2=list_comand;
 				 struct value_var *check_var;
 				 while (list_comand2!=NULL){
-				 	getFiles(list_comand2->list);
+				 	getFiles(list_comand2->list);//globbing
 				 	//Como hacer el globbing y a la vez la expansion del comando, o quizas deba hacerlo luego sobre valor y value?¿?¿?¿
 
 				 	check_var=check_var_value(list_comand2->list->first->ins);
 					printf("AQUI%d", check_var->var); 	
 				 	if (check_var->var){
+				 		//hacer globbing aqui?¿?¿
 				 		check_var->variable=env_variable(check_var->variable);
 				 		check_var->value=env_variable(check_var->value);
-				 		list_equiality=(struct list *) malloc (sizeof(struct list));
+				 		
+				 		//list_equiality=(struct list *) malloc (sizeof(struct list));
 				 		//add_element(list_equiality, check_var->variable);
 				 		//add_element(list_equiality, check_var->variable);
 				 		printf("\nAsignacion de Variable\n%s\n%s\n", check_var->variable,check_var->value);
-
 				 		
 				 	}else{
 				 		printf("\nEjecución de comando\n");
+				 		subs_env(list_comand2->list);
+				 		getFiles(list_comand2->list);//globbing
 				 		print(list_comand2->list);
 				 		
 				 	}
