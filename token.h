@@ -14,6 +14,23 @@ struct list* tokenizar(char *line, char *cut);
 struct param_cmd* get_in_out(char *line);
 struct value_var* check_var_value(char *ins);
 
+//Función para sacar las variables de entorno
+
+char* env_var(char *word){
+	char *aux;
+	char *pointer;
+	char *var
+	
+	pointer=strchar(word,'$');
+	//quizas meterlo en buble que lo haga sea recortar hasta que me quede mi palabra sin ningun elemento raro $%&%....
+	if (pointer){
+		var=strtok(pointer,'$');
+		aux=strdup(getenv(var))
+	}
+	
+	return aux;
+}
+
 
 struct value_var* check_var_value(char *ins){
 	char *aux;
