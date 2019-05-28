@@ -13,22 +13,36 @@ struct value_var{
 struct list* tokenizar(char *line, char *cut);
 struct param_cmd* get_in_out(char *line);
 struct value_var* check_var_value(char *ins);
+char* env_variable(char *word);
 
 //Función para sacar las variables de entorno
 
-char* env_var(char *word){
-	char *aux;
+char* env_variable(char *word){
 	char *pointer;
-	char *var
+	char *var;
+	char *aux;
 	
-	pointer=strchar(word,'$');
+	pointer=strchr(word,'$');
 	//quizas meterlo en buble que lo haga sea recortar hasta que me quede mi palabra sin ningun elemento raro $%&%....
 	if (pointer){
-		var=strtok(pointer,'$');
-		aux=strdup(getenv(var))
+		var=strtok(pointer,"$");
+		printf("\nPAlabra\n%s\n",var);
+		
+		if (var){
+			aux=(getenv(var));
+			if (aux){
+				printf("VAR\n%s\n", aux);
+				free(word);
+				
+				word=strdup(aux);
+				printf("VAR\n%s\n", word);
+				return word;
+			}else{
+				printf("AQUI VA UN ERROR");
+			}
+		}
 	}
-	
-	return aux;
+	return word;
 }
 
 
