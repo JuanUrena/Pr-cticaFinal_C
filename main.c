@@ -14,6 +14,7 @@ int main(int argc, char *argv[])
 	
 	struct list *ins_list;
 	struct list *arg_list;
+	struct list *list_equiality;
 	struct cell *ins;
 //	struct list *comand;
 	struct comands *list_comand;
@@ -55,7 +56,6 @@ int main(int argc, char *argv[])
 				while(i<ins_list->number_element){
 				
 					arg_list=tokenizar(ins->ins, " ");
-				
 					if(!list_comand){
 						//printf("SE AÑADE EL PRIMER ELEMENTO");
 						list_comand=(struct comands *) malloc (sizeof(struct comands));
@@ -100,9 +100,17 @@ int main(int argc, char *argv[])
 				 	check_var=check_var_value(list_comand2->list->first->ins);
 					printf("AQUI%d", check_var->var); 	
 				 	if (check_var->var){
+				 		check_var->variable=env_variable(check_var->variable);
+				 		check_var->value=env_variable(check_var->value);
+				 		list_equiality=(struct list *) malloc (sizeof(struct list));
+				 		//add_element(list_equiality, check_var->variable);
+				 		//add_element(list_equiality, check_var->variable);
 				 		printf("\nAsignacion de Variable\n%s\n%s\n", check_var->variable,check_var->value);
+
+				 		
 				 	}else{
 				 		printf("\nEjecución de comando\n");
+				 		print(list_comand2->list);
 				 		
 				 	}
 				 	list_comand2=list_comand2->next;
