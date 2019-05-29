@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
 
   
 	do{
+		//list_comand=(struct comands *) malloc (sizeof(struct comands));
 		list_comand=NULL;
 		arg_list=(struct list *) malloc (sizeof(struct list));
 		free(arg_list);
@@ -53,30 +54,38 @@ int main(int argc, char *argv[])
 	  			return 0;
 			}
 			
+			
 			cmd_line=get_in_out(text);
+			
 			free(text);
-			//printf("\n%s\n%s\n%s\n",cmd_line->comand, cmd_line->in, cmd_line->out);
+			printf("\n%s\n%s\n%s\n",cmd_line->comand, cmd_line->in, cmd_line->out);
 		//lista de las instrucciones 
 			if (cmd_line->comand){
 				ins_list=tokenizar(cmd_line->comand, "|");
-				//print(ins_list);
+				//printf("%d",ins_list->number_element);
 			
 			
 			//obtengo para cada instruccion su lista de argumentos. 
 				ins=ins_list->first;
-				//printf("\nee:\n%d",ins_list->number_element);
+				//printf("%d",ins_list->number_element);
 				while(i<ins_list->number_element){
-				
-					arg_list=tokenizar(ins->ins, " ");
+				//printf("%dSE AÑADE ELEMENTO",ins_list->number_element);
+			//	printf("SE AÑADE ELEMENTO");
+				arg_list=tokenizar(ins->ins, " ");
+			//	printf("SE AÑADE ELEMENTO");
+				print(arg_list);
+					
+					
 					if(!list_comand){
-						//printf("SE AÑADE EL PRIMER ELEMENTO");
+						printf("\nSE AÑADE EL PRIMER ELEMENTO");
 						list_comand=(struct comands *) malloc (sizeof(struct comands));
 						list_comand->list=NULL;
 						list_comand->next=NULL;
 					
 						list_comand->list=arg_list;
+						b=1;
 					}else{
-						//printf("SE AÑADE OTRO ELEMENTO");
+						printf("\nSE AÑADE OTRO ELEMENTO");
 						list_comand2=list_comand;
 						while (list_comand2){
 							aux=list_comand2;
@@ -91,7 +100,7 @@ int main(int argc, char *argv[])
 					ins=ins->next;
 				
 					i++;
-				}
+				};
 				
 			//	print(ins_list);
 			//	ins=ins_list->first;
@@ -102,36 +111,43 @@ int main(int argc, char *argv[])
 			//	}
 			
 			//Vamos a comprobar que cada elemento en la lista si es una asignacion de variable
-			
-				 list_comand2=list_comand;
-				 struct value_var *check_var;
+				printf("\nINICIO\n"); 
+					list_comand2=list_comand;
+					struct value_var *check_var;
+					
 				 while (list_comand2!=NULL){
-				 	getFiles(list_comand2->list);//globbing
+				 	printf("\nINICIO\n"); 
+				 	//getFiles(list_comand2->list);//globbing
 				 	//Como hacer el globbing y a la vez la expansion del comando, o quizas deba hacerlo luego sobre valor y value?¿?¿?¿
 
-				 	check_var=check_var_value(list_comand2->list->first->ins);
-					printf("AQUI%d", check_var->var); 	
+					check_var=check_var_value(list_comand2->list->first->ins);
+					printf("AQUI:::%d\n", check_var->var); 	
 				 	if (check_var->var){
 				 		//hacer globbing aqui?¿?¿
 				 		check_var->variable=env_variable(check_var->variable);
 				 		check_var->value=env_variable(check_var->value);
 				 		
+				 		char *var_aux=prepare_value(check_var->value);
+				 		
 				 		//list_equiality=(struct list *) malloc (sizeof(struct list));
 				 		//add_element(list_equiality, check_var->variable);
 				 		//add_element(list_equiality, check_var->variable);
-				 		printf("\nAsignacion de Variable\n%s\n%s\n", check_var->variable,check_var->value);
-				 		
+				 		printf("\nAsignacion de Variable\n%s\n%s\n", check_var->variable, var_aux);
+				 		free(var_aux);
 				 	}else{
 				 		printf("\nEjecución de comando\n");
 				 		subs_env(list_comand2->list);
-				 		getFiles(list_comand2->list);//globbing
-				 		print(list_comand2->list);
-				 		
+				 		glob_t glob=getFiles(list_comand2->list);//globbing
+				 		//Comprobar el free
+
+				 		for(i = 0; i < glob.gl_pathc; i++ ){
+							printf("path:\n%s\n",glob.gl_pathv[i]);
+						}
+				 		globfree(&glob);
 				 	}
 				 	list_comand2=list_comand2->next;
 				 }
 				
-		
 				//printf("\n3:\n%s",text2);
 				//print_all(list_comand);
 				free_all(list_comand);

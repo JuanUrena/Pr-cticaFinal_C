@@ -18,11 +18,13 @@ char* env_variable(char *word);
 //Función para sacar las variables de entorno
 
 char* env_variable(char *word){
-	char *pointer;
+	char *pointer=NULL;
 	char *var;
 	char *aux;
+	if (word){
+		pointer=strchr(word,'$');
+	}//Comprobar que es el primer elemento?¿?¿
 	
-	pointer=strchr(word,'$');
 	//quizas meterlo en buble que lo haga sea recortar hasta que me quede mi palabra sin ningun elemento raro $%&%....
 	if (pointer){
 		var=strtok(pointer,"$");
@@ -32,7 +34,7 @@ char* env_variable(char *word){
 			aux=(getenv(var));
 			if (aux){
 				printf("VAR\n%s\n", aux);
-				//free(word);
+				free(word);
 				
 				word=strdup(aux);
 				printf("VAR\n%s\n", word);
@@ -49,25 +51,27 @@ char* env_variable(char *word){
 struct value_var* check_var_value(char *ins){
 	char *aux;
 	char *var;
-	char *value;
+	char *value=NULL;
 	struct value_var *param;
-	
+	printf("check_var_value\n%s\n", ins);
 	param=(struct value_var *)malloc(sizeof(struct value_var));
 	
 	aux=strchr(ins, '=');
 	param->var=0;
 	if (aux!=NULL){
-		var=strtok(ins, "=");
-		value=strtok(NULL, "=");
+		var=(strtok(ins, "="));
+		value=(strtok(NULL, "="));
 		if (var && *var==*ins){
 			param->var=1;
 			printf("AQUI%s", var);	
-		}
+			printf("AQUI%s", value);
+		}	
 	}
 	
 	param->variable=var;
 	param->value=value;
-
+	printf("\nAQUI%s", param->variable);	
+	printf("\nAQUI%s", param->value);
 	return param;
 };
  
@@ -195,18 +199,22 @@ struct list* tokenizar(char *line, char *cut){
 	mylist->first=NULL;
 	mylist->number_element=0;
 
-	//printf("\n2:\n%s",line);
-	char *copy = (char *)malloc(strlen(line) + 1);
-	strcpy(copy, line);
+	//printf("\n2:%s",line);
+	char *copy = strdup(line);
 	char *token;
-	
+	//printf("\n3:\n%s",copy);
 	token=strtok(copy, cut);
 	
 	while(token != NULL ) {
+		//printf("\n3:\n%d\n",*token);
+		char *aux=strdup(token);
 		add_element(mylist, token);
+		free(aux);
 		token = strtok(NULL, cut);
 	}
 	free(copy);	
-   return mylist;
 	
-}
+	//print(mylist);
+	//printf("\nFIN");
+	return mylist;
+};

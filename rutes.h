@@ -1,8 +1,45 @@
 #include <glob.h>
 
-void getFiles(struct list *mylist);
+glob_t getFiles(struct list *mylist);
+char* prepare_value(char *word);
 
-void getFiles(struct list *mylist){
+
+char* prepare_value(char *word){
+
+	char *value=NULL;
+	glob_t globbuf;
+	
+	if (word){
+			printf("word:\n%s\n",word);
+		glob(word, GLOB_NOCHECK, NULL, &globbuf);
+	
+		int i;
+		
+		for(i = 0; i < globbuf.gl_pathc; i++ ){
+			printf("valor antes:\n%s\n",value);
+			printf("path:\n%s\n",globbuf.gl_pathv[i]);
+			if (value){
+				value=(char *) realloc(value, strlen(value)+strlen(globbuf.gl_pathv[i])+2);
+				strcat(value, ":");
+			}else{
+				value=(char *) calloc(1,strlen(globbuf.gl_pathv[i])+1);
+			}
+			printf("value:\n%s\n",value);
+			printf("i:\n%s\n",globbuf.gl_pathv[i]);
+			strcat(value, globbuf.gl_pathv[i]);
+			printf("valor despues:\n%s\n",value);
+		}
+		if (globbuf.gl_pathc){
+	 		globfree(&globbuf);	
+	 		printf("path:\n%s\n",value);
+		}
+	}
+
+	return value;
+}
+
+
+glob_t getFiles(struct list *mylist){
 	
 	struct cell *iterator=mylist->first;
 	
@@ -30,5 +67,7 @@ void getFiles(struct list *mylist){
 	for(i = 0; i < globbuf.gl_pathc; i++ ){
 		printf("path:\n%s\n",globbuf.gl_pathv[i]);
 	}
+	
+	return globbuf;
   //Free the globbuf structure
 }
