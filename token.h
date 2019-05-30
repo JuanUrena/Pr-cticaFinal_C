@@ -28,16 +28,16 @@ char* env_variable(char *word){
 	//quizas meterlo en buble que lo haga sea recortar hasta que me quede mi palabra sin ningun elemento raro $%&%....
 	if (pointer){
 		var=strtok(pointer,"$");
-		printf("\nPAlabra\n%s\n",var);
+		//printf("\nPAlabra\n%s\n",var);
 		
 		if (var){
 			aux=(getenv(var));
 			if (aux){
-				printf("VAR\n%s\n", aux);
+			//	printf("VAR\n%s\n", aux);
 				free(word);
 				
 				word=strdup(aux);
-				printf("VAR\n%s\n", word);
+		//		printf("VAR\n%s\n", word);
 				return word;
 			}else{
 				printf("AQUI VA UN ERROR");
@@ -53,7 +53,7 @@ struct value_var* check_var_value(char *ins){
 	char *var;
 	char *value=NULL;
 	struct value_var *param;
-	printf("check_var_value\n%s\n", ins);
+	//printf("check_var_value\n%s\n", ins);
 	param=(struct value_var *)malloc(sizeof(struct value_var));
 	
 	aux=strchr(ins, '=');
@@ -63,15 +63,15 @@ struct value_var* check_var_value(char *ins){
 		value=(strtok(NULL, "="));
 		if (var && *var==*ins){
 			param->var=1;
-			printf("AQUI%s", var);	
-			printf("AQUI%s", value);
+	//		printf("AQUI%s", var);	
+	//		printf("AQUI%s", value);
 		}	
 	}
 	
 	param->variable=var;
 	param->value=value;
-	printf("\nAQUI%s", param->variable);	
-	printf("\nAQUI%s", param->value);
+//	printf("\nAQUI%s", param->variable);	
+//	printf("\nAQUI%s", param->value);
 	return param;
 };
  
