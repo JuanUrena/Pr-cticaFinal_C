@@ -126,6 +126,7 @@ int main(int argc, char *argv[])
 				 	//Como hacer el globbing y a la vez la expansion del comando, o quizas deba hacerlo luego sobre valor y value?¿?¿?¿
 					switch(fork()){
 					case 0:
+						printf("I am child process my ID is   =  %d\n" , getpid());
 						check_var=check_var_value(list_comand2->list->first->ins);
 						//printf("AQUI:::%d\n", check_var->var); 	
 					 	if (check_var->var){
@@ -176,7 +177,7 @@ int main(int argc, char *argv[])
     					printf("Fin hijo:%d", status);
     				} 
      			}
-				
+				printf("I am DAD process my ID is   =  %d\n" , getpid());
 				//printf("\n3:\n%s",text2);
 				//print_all(list_comand);
 				free_all(list_comand);
