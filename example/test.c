@@ -15,8 +15,8 @@ int main(){
 	if (value){
 		pointer=strchr(value,'$');
 	}
-	//if (value){
+	if (value){
 		printf("\n%s\n%s\n%s",var, value, pointer);
-	//}
+	}
 	return 0;
 }

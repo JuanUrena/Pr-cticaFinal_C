@@ -10,3 +10,6 @@ info util para el builtin
     ListOfOwnCmds[1] = "cd"; 
     ListOfOwnCmds[2] = "help"; 
     ListOfOwnCmds[3] = "hello"; 
+    
+    
+    Hay que agregar el error cuando la variable de error no existe.

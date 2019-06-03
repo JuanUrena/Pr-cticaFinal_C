@@ -48,7 +48,7 @@ char* get_route(char *program){
 
 int main() {
 
-	char *word=get_route("sol");
+	char *word=get_route("pwd");
 	if (word){
 		printf("%s\n",word);
 		free(word);
