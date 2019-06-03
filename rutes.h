@@ -68,6 +68,8 @@ char* prepare_value(char *word){
 			strcat(value, globbuf.gl_pathv[i]);
 		//	printf("valor despues:\n%s\n",value);
 		}
+		globfree(&globbuf);
+		
 	}
 
 	return value;

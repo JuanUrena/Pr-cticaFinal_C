@@ -13,7 +13,7 @@ main(int argc, char *argv[])
 {
 	int fd[2];
 	char *str ="Luke, I am your father\n";
-	int file=open(" text.txt ", O_WRONLY);
+	printf("Aqui");
 	if(pipe(fd) < 0)
 		err(EXIT_FAILURE, "cannot make a pipe");
 
@@ -21,19 +21,15 @@ main(int argc, char *argv[])
 	case -1:
 		err(EXIT_FAILURE, "fork failed");
 	case 0:
-		
-		dup2(file, 1);
 		close(fd[1]);
-		dup2(fd[0], 0);
 		close(fd[0]);
-		execl("/usr/bin/tr", "tr", "a-z", "A-Z", NULL);
+		execl("/bin/ls", "ls", NULL);
 		err(EXIT_FAILURE, "exec failed");
 	default:
 		close(fd[0]);
-		printf("Aqui");
-		dup2(fd[1], 1);
+		if(write(fd[1], str, strlen(str)) != strlen(str))
+			err(EXIT_FAILURE, "error writting in pipe");
 		close(fd[1]);
-		printf("%s", str);
  	}
 	exit(EXIT_SUCCESS);
 }

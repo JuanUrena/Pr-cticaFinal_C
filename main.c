@@ -50,7 +50,7 @@ void generate_pipe(int num_pipes,int pipes[num_pipes][2]){
 	}
 }
 
-void close_pipes(const int num, int num_pipes, int pipes[num_pipes][2]){
+void close_pipes(int num, int num_pipes, int pipes[num_pipes][2]){
 	for (int i=0; i<num_pipes; i++){
 		if(i==num){
 			close (pipes[i][0]);
@@ -74,6 +74,15 @@ void son_code(int num, int num_pipes, int pipes[num_pipes][2]){
 	printf("mensaje");
 	exit(0);
 }
+
+void generate_array(glob_t glob, char *arr[glob.gl_pathc+1]){
+	int i=0;
+	for(i=0;i < glob.gl_pathc; i++ ){
+		arr[i]=glob.gl_pathv[i];
+	}
+	arr[i]=NULL; 
+}
+
 
 
 // Function to execute builtin commands 
@@ -238,7 +247,7 @@ S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
 								}//error!!
 							}
 						}
-						son_code(num, ins_list->number_element-1, conex);
+						close_pipes(num, ins_list->number_element-1, conex);
 						printf("I am child process my ID is   =  %d\n" , getpid());
 						check_var=check_var_value(list_comand2->list->first->ins);
 						//printf("AQUI:::%d\n", check_var->var); 	
@@ -248,12 +257,21 @@ S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
 					 		check_var->value=env_variable(check_var->value);
 					 		
 					 		char *var_aux=prepare_value(check_var->value);
-					 		
+			
 					 		//list_equiality=(struct list *) malloc (sizeof(struct list));
 					 		//add_element(list_equiality, check_var->variable);
 					 		//add_element(list_equiality, check_var->variable);
-					 		printf("\nAsignacion de Variable\n%s\n%s\n", check_var->variable, var_aux);
+					 		printf("\nAsignacion de Variable\n%s\n%s\n", check_var->variable, check_var->value);
+					 		int result_env=setenv(check_var->variable, var_aux, 1);
+					 		free(check_var->variable);
+					 		//printf("1");
+					 		//liberar value?¿?¿? me da invalid pointer
+					 		//printf("2");
+					 		free(check_var);
+					 		//printf("3");
 					 		free(var_aux);
+					 		//printf("4");
+					 		return result_env;
 					 	}else{
 					 		printf("\nEjecución de comando\n");
 					 		subs_env(list_comand2->list);
@@ -266,11 +284,18 @@ S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
 							 		char *route=get_route(glob.gl_pathv[0]);
 							 		if (route){
 										printf("path:%s\n",route);
-										free(route);
+									
 									}
-
-							 		for(i = 1; i < glob.gl_pathc; i++ ){
-							 			printf("arg:%s\n",glob.gl_pathv[i]);
+	
+									char *arr[glob.gl_pathc+1];
+									
+									generate_array(glob, arr);
+									for(i=0; i < glob.gl_pathc+1; i++ ){
+										printf("\nARG:%s", arr[i]);
+									}
+									if (route){
+										execv(route,arr);
+										
 									}
 								}
 						 		globfree(&glob);
