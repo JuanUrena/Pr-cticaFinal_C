@@ -28,17 +28,18 @@ char* env_variable(char *word){
 	//quizas meterlo en buble que lo haga sea recortar hasta que me quede mi palabra sin ningun elemento raro $%&%....
 	if (pointer){
 		var=strtok(pointer,"$");
-		//printf("\nPAlabra\n%s\n",var);
+		printf("\nPAlabra\n%s\n",var);
 		
 		if (var){
 			aux=(getenv(var));
+			printf("\nPalabra\n%s\n",aux);
 			if (aux){
-			//	printf("VAR\n%s\n", aux);
+				printf("dir:%d\n", *aux);
 				free(word);
 				
-				word=strdup(aux);
-		//		printf("VAR\n%s\n", word);
-				return word;
+				char *resolve=strdup(aux);
+				printf("VAR\n%s\n", word);
+				return resolve;
 			}else{
 				printf("AQUI VA UN ERROR");
 			}
@@ -63,13 +64,16 @@ struct value_var* check_var_value(char *ins){
 		value=(strtok(NULL, "="));
 		if (var && *var==*ins){
 			param->var=1;
+			param->variable=strdup(var);
+			if (value){
+				param->value=strdup(value);
+			}else{
+				param->value=NULL;
+			}
 	//		printf("AQUI%s", var);	
 	//		printf("AQUI%s", value);
 		}	
 	}
-	
-	param->variable=var;
-	param->value=value;
 //	printf("\nAQUI%s", param->variable);	
 //	printf("\nAQUI%s", param->value);
 	return param;

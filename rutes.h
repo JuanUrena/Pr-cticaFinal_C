@@ -70,6 +70,8 @@ char* prepare_value(char *word){
 		}
 		globfree(&globbuf);
 		
+	}else{
+		value=strdup("\0");
 	}
 
 	return value;

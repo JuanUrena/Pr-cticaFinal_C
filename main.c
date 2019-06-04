@@ -240,6 +240,36 @@ int main(int argc, char *argv[])
 					int out;
 					
 					while (list_comand2!=NULL){
+					
+					check_var=check_var_value(list_comand2->list->first->ins);
+						//printf("AQUI:::%d\n", check_var->var); 	
+					 	if (check_var->var){
+					 		printf("VALUE1:%s\n", check_var->value);
+					 		//hacer globbing aqui?¿?¿
+					 		
+					 		check_var->variable=env_variable(check_var->variable);
+					 		check_var->value=env_variable(check_var->value);
+								
+							printf("var:%s\n", check_var->variable);							 						 		
+					 		char *var_aux=prepare_value(check_var->value);
+			
+					 		//list_equiality=(struct list *) malloc (sizeof(struct list));
+					 		//add_element(list_equiality, check_var->variable);
+					 		//add_element(list_equiality, check_var->variable);
+					 		setenv(check_var->variable, var_aux, 1);
+					 		char *aux3=(getenv(check_var->variable));
+							printf("VALUE:%s\n", aux3);					 		
+					 		free(check_var->variable);
+					 		//free(check_var->value);
+					 		//printf("1");
+					 		//liberar value?¿?¿? me da invalid pointer
+					 		//printf("2");
+					 		free(check_var);
+					 		//printf("3");
+					 		free(var_aux);
+					 		//printf("4");
+					 		printf("VALUE:%s\n", aux3);
+					 	}else{
 				 		
 				 	//printf("\nINICIO\n"); 
 				 	//getFiles(list_comand2->list);//globbing
@@ -287,30 +317,7 @@ S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
 								close(conex[j][1]);
 							}
 						} */
-
-						check_var=check_var_value(list_comand2->list->first->ins);
-						//printf("AQUI:::%d\n", check_var->var); 	
-					 	if (check_var->var){
-					 		//hacer globbing aqui?¿?¿
-					 		check_var->variable=env_variable(check_var->variable);
-					 		check_var->value=env_variable(check_var->value);
-					 		
-					 		char *var_aux=prepare_value(check_var->value);
-			
-					 		//list_equiality=(struct list *) malloc (sizeof(struct list));
-					 		//add_element(list_equiality, check_var->variable);
-					 		//add_element(list_equiality, check_var->variable);
-					 		int result_env=setenv(check_var->variable, var_aux, 1);
-					 		free(check_var->variable);
-					 		//printf("1");
-					 		//liberar value?¿?¿? me da invalid pointer
-					 		//printf("2");
-					 		free(check_var);
-					 		//printf("3");
-					 		free(var_aux);
-					 		//printf("4");
-					 		return result_env;
-					 	}else{
+						
 					 		subs_env(list_comand2->list);
 					 		glob_t glob=getFiles(list_comand2->list);//globbing
 					 		//Comprobar el free
@@ -321,6 +328,7 @@ S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
 							 		char *route=get_route(glob.gl_pathv[0]);	
 									
 									if (route){
+										printf("%s\n", route);
 										char *arr[glob.gl_pathc+1];
 										for(i=0;i < glob.gl_pathc; i++ ){
 											arr[i]=glob.gl_pathv[i];
@@ -335,7 +343,6 @@ S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
 								}
 						 		globfree(&glob);
 						 	}
-					 	}
 					 	free_all(list_comand);
 						free_list(ins_list);
 						free(cmd_line->comand);
@@ -350,9 +357,10 @@ S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
 					 	return 1;
 					 	break;
 					 }
-					 	
+					 num++;
+					}	
 				 	list_comand2=list_comand2->next;
-				 	num++;
+				 	
 				 }
 				 dup2(input, 0);
 				 dup2(output,1);
