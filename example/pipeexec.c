@@ -8,28 +8,49 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+
+
+void close_pipes(int pipes[4][2]){
+	for (int i=0; i<4; i++){
+		close(pipes[i][0]);
+		close(pipes[i][1]);
+	} 
+}
+
+
 int
 main(int argc, char *argv[])
 {
-	int fd[2];
-	char *str ="Luke, I am your father\n";
+
+	int num_pipes=4;
+	int conex[num_pipes][2];
+				
+			
+	for(int i=0; i<num_pipes; i++){
+		if (pipe(conex[i]) == -1) {
+			perror("pipe");
+			exit(EXIT_FAILURE);
+		}else{
+			printf("Correct\n");
+		}
+	}
+
+//	char *str ="Luke, I am your father\n";
 	printf("Aqui");
-	if(pipe(fd) < 0)
-		err(EXIT_FAILURE, "cannot make a pipe");
 
 	switch(fork()){
 	case -1:
 		err(EXIT_FAILURE, "fork failed");
 	case 0:
-		close(fd[1]);
-		close(fd[0]);
-		execl("/bin/ls", "ls", NULL);
+		dup2(conex[3][0], 0);
+		close_pipes(conex);
+		execl("/usr/bin/tr", "tr", "a-z", "A-Z",NULL);
 		err(EXIT_FAILURE, "exec failed");
 	default:
-		close(fd[0]);
-		if(write(fd[1], str, strlen(str)) != strlen(str))
-			err(EXIT_FAILURE, "error writting in pipe");
-		close(fd[1]);
+		dup2(conex[3][1], 1);
+		close_pipes(conex);
+		execl("/bin/ls", "ls", NULL);
+		
  	}
 	exit(EXIT_SUCCESS);
 }

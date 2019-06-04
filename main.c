@@ -56,7 +56,6 @@ void close_pipes(int num, int num_pipes, int pipes[num_pipes][2]){
 			close (pipes[i][0]);
 			dup2(pipes[i][1], 1);
 			close (pipes[i][1]);
-		
 		}else if (i==(num-1)){
 			close(pipes[i][1]);
 			dup2(pipes[i][0], 0);
@@ -157,21 +156,29 @@ int main(int argc, char *argv[])
 		//lista de las instrucciones 
 			if (cmd_line->comand){
 				ins_list=tokenizar(cmd_line->comand, "|");
-				printf("EEEEEEOOOO%d\n",ins_list->number_element);
 				
-				int conex[ins_list->number_element][2];
+			/*	int num_pipes=ins_list->number_element-1;
+				int conex[num_pipes][2];
 				
-				generate_pipe(ins_list->number_element-1, conex);
+			
+				for(i=0; i<num_pipes; i++){
+					if (pipe(conex[i]) == -1) {
+						perror("pipe");
+						exit(EXIT_FAILURE);
+					}else{
+						printf("Correct\n");
+					}
+				}*/
 			
 			
 			//obtengo para cada instruccion su lista de argumentos. 
 				ins=ins_list->first;
+				i=0;
 				//printf("%d",ins_list->number_element);
 				while(i<ins_list->number_element){
 				//printf("%dSE AÑADE ELEMENTO",ins_list->number_element);
 			//	printf("SE AÑADE ELEMENTO");
 				arg_list=tokenizar(ins->ins, " ");
-			//	printf("SE AÑADE ELEMENTO");
 			//	print(arg_list);
 					
 					
@@ -200,7 +207,7 @@ int main(int argc, char *argv[])
 					i++;
 				};
 				
-			//	print(ins_list);
+				//print(ins_list);
 			//	ins=ins_list->first;
 			//	while (ins!=NULL){
 			//		aux=ins->next;
@@ -212,43 +219,75 @@ int main(int argc, char *argv[])
 				//printf("\nINICIO\n"); 
 					list_comand2=list_comand;
 					struct value_var *check_var;
-				int num=0;
-				 while (list_comand2!=NULL){
+					
+					int input=dup(0);
+					int output=dup(1);
+									
+					
+					//int num_pipes=ins_list->number_element-1;
+					int num=0;
+					
+					int in;
+					if (cmd_line->in){
+					//estamos quitando espacios sin mas, si estan en medio dejarlos?¿
+						remove_spaces(cmd_line->in);
+						in=open(cmd_line->in, O_RDONLY);
+					} else{
+						in =dup(input);
+					}
+					
+					int child;
+					int out;
+					
+					while (list_comand2!=NULL){
+				 		
 				 	//printf("\nINICIO\n"); 
 				 	//getFiles(list_comand2->list);//globbing
 				 	//Como hacer el globbing y a la vez la expansion del comando, o quizas deba hacerlo luego sobre valor y value?¿?¿?¿
-					switch(fork()){
+				 	dup2(in,0);
+				 	close (in);
+				 	
+				 	if(num==ins_list->number_element-1){
+						if (cmd_line->out){
+							remove_spaces(cmd_line->out);							
+							//estamos quitando espacios sin mas, si estan en medio dejarlos?¿
+							//valorar la opcion de append si tiene >>?¿?¿?
+							out=open(cmd_line->out, O_WRONLY|O_CREAT, 
+S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
+						} else{
+							out=dup(output);
+						}
+					}else{
+						
+						int fd[2];
+						pipe(fd);
+						out=fd[1];
+						in=fd[0];
+					}
+					dup2(out,1);
+					close(out);
+				 	
+				 	child=fork();
+					switch(child){
 					case 0:
 						//Primero, redirigir mi entrada al fichero
-						if (num==0){
-							if (cmd_line->in){
-								//estamos quitando espacios sin mas, si estan en medio dejarlos?¿
-								remove_spaces(cmd_line->in);
-								int file=open(cmd_line->in, O_RDONLY);
-								if (file>=0){
-									printf("%s\n",cmd_line->in); 
-									dup2(file, 0);
-									close(file);
-								}//error!!
-							}
 						//utlimo, redirijo mi salida
-						}
-						if(num==ins_list->number_element-1){
-							if (cmd_line->out){
-								remove_spaces(cmd_line->out);							
-								//estamos quitando espacios sin mas, si estan en medio dejarlos?¿
-								//valorar la opcion de append si tiene >>?¿?¿?
-								int file=open(cmd_line->out, O_WRONLY|O_CREAT, 
-S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
-								if (file>=0){
-									printf("%s\n",cmd_line->out);
-									dup2(file, 1);
-									close(file);
-								}//error!!
+						
+					/*	for (int j=0; j<(ins_list->number_element-1); j++){
+							if(j==num){
+								printf("salida:::%d\n", j);
+								dup2(conex[j][1], 1);
+								close(conex[j][0]);
+							}else if (j==(num-1)){
+								printf("entrada:::%d\n", j); 	
+								dup2(conex[j][0], 0);
+								close(conex[j][1]);
+							}else{
+								close(conex[j][0]);
+								close(conex[j][1]);
 							}
-						}
-						close_pipes(num, ins_list->number_element-1, conex);
-						printf("I am child process my ID is   =  %d\n" , getpid());
+						} */
+
 						check_var=check_var_value(list_comand2->list->first->ins);
 						//printf("AQUI:::%d\n", check_var->var); 	
 					 	if (check_var->var){
@@ -261,7 +300,6 @@ S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
 					 		//list_equiality=(struct list *) malloc (sizeof(struct list));
 					 		//add_element(list_equiality, check_var->variable);
 					 		//add_element(list_equiality, check_var->variable);
-					 		printf("\nAsignacion de Variable\n%s\n%s\n", check_var->variable, check_var->value);
 					 		int result_env=setenv(check_var->variable, var_aux, 1);
 					 		free(check_var->variable);
 					 		//printf("1");
@@ -273,7 +311,6 @@ S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
 					 		//printf("4");
 					 		return result_env;
 					 	}else{
-					 		printf("\nEjecución de comando\n");
 					 		subs_env(list_comand2->list);
 					 		glob_t glob=getFiles(list_comand2->list);//globbing
 					 		//Comprobar el free
@@ -281,21 +318,19 @@ S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
 					 		if (glob.gl_pathc){
 					 			if (!ownCmdHandler(glob.gl_pathv[0])){
 					 			
-							 		char *route=get_route(glob.gl_pathv[0]);
-							 		if (route){
-										printf("path:%s\n",route);
+							 		char *route=get_route(glob.gl_pathv[0]);	
 									
-									}
-	
-									char *arr[glob.gl_pathc+1];
-									
-									generate_array(glob, arr);
-									for(i=0; i < glob.gl_pathc+1; i++ ){
-										printf("\nARG:%s", arr[i]);
-									}
 									if (route){
+										char *arr[glob.gl_pathc+1];
+										for(i=0;i < glob.gl_pathc; i++ ){
+											arr[i]=glob.gl_pathv[i];
+										}
+										arr[i]=NULL; 
 										execv(route,arr);
 										
+									}else{
+									
+									exit (0);
 									}
 								}
 						 		globfree(&glob);
@@ -310,6 +345,7 @@ S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
 						return 0;
 					 	break;
 					 case -1:
+					 	printf("\n fail \n");
 					 	fprintf(stderr, "for failed");
 					 	return 1;
 					 	break;
@@ -318,14 +354,19 @@ S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
 				 	list_comand2=list_comand2->next;
 				 	num++;
 				 }
+				 dup2(input, 0);
+				 dup2(output,1);
+				 close(input);
+				 close(output);
+				 
 				 int status;
-				 for(int x=0;x<num;x++){ 
-    				waitpid(-1, &status, 0);
-    				if WIFEXITED(status){
-    					printf("Fin hijo:%d", status);
-    				} 
+				// for(int x=0;x<num;x++){ 
+    			waitpid(-1, &status, 0);
+    			if WIFEXITED(status){
+    				printf("Fin hijo:%d\n", status);
+    				//} 
      			}
-				printf("I am DAD process my ID is   =  %d\n" , getpid());
+     			printf("Fin todos los hijo:\n");
 				//printf("\n3:\n%s",text2);
 				//print_all(list_comand);
 				free_all(list_comand);
