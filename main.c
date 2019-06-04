@@ -16,6 +16,24 @@
 #include "rutes.h"
 
 
+int check_lastchar(char *phrase, char letter){
+	int i=1;
+	int result =0;
+	int l=strlen(phrase);
+	while(i<=l){
+		if(phrase[l-i]==letter){
+			result=1;
+			i=l+1;
+		}else if(phrase[l-i]==' '){
+			i++;
+		}else{
+			i=l+1;
+		}
+	}
+	return result;
+}
+
+
 void remove_spaces(char* source)
 {
   char* i = source;
@@ -143,12 +161,22 @@ int main(int argc, char *argv[])
 	//compruebo si es EOF
 		if(text){
 			if (!strlen(text)){
-				free(text);
+				free(text); 
+				int childs;
+				do {
+					int  status;
+					childs=wait(&status);
+   					if(status == -1) {
+        				perror("Error during wait()");
+        				abort();
+    				}
+				} while (childs > 0);
+					
 				printf("\n-----FIN-----");
 	  			return 0;
 			}
 			
-			
+			int notwait=check_lastchar(text,'&');
 			cmd_line=get_in_out(text);
 			
 			free(text);
@@ -232,6 +260,8 @@ int main(int argc, char *argv[])
 					//estamos quitando espacios sin mas, si estan en medio dejarlos?¿
 						remove_spaces(cmd_line->in);
 						in=open(cmd_line->in, O_RDONLY);
+					}else if(notwait){
+						in =open("/dev/null",O_RDONLY); 
 					} else{
 						in =dup(input);
 					}
@@ -244,21 +274,21 @@ int main(int argc, char *argv[])
 					check_var=check_var_value(list_comand2->list->first->ins);
 						//printf("AQUI:::%d\n", check_var->var); 	
 					 	if (check_var->var){
-					 		printf("VALUE1:%s\n", check_var->value);
+					 		//printf("VALUE1:%s\n", check_var->value);
 					 		//hacer globbing aqui?¿?¿
 					 		
 					 		check_var->variable=env_variable(check_var->variable);
 					 		check_var->value=env_variable(check_var->value);
 								
-							printf("var:%s\n", check_var->variable);							 						 		
+							//printf("var:%s\n", check_var->variable);							 						 		
 					 		char *var_aux=prepare_value(check_var->value);
 			
 					 		//list_equiality=(struct list *) malloc (sizeof(struct list));
 					 		//add_element(list_equiality, check_var->variable);
 					 		//add_element(list_equiality, check_var->variable);
 					 		setenv(check_var->variable, var_aux, 1);
-					 		char *aux3=(getenv(check_var->variable));
-							printf("VALUE:%s\n", aux3);					 		
+					 		//char *aux3=(getenv(check_var->variable));
+							//printf("VALUE:%s\n", aux3);					 		
 					 		free(check_var->variable);
 					 		//free(check_var->value);
 					 		//printf("1");
@@ -268,7 +298,7 @@ int main(int argc, char *argv[])
 					 		//printf("3");
 					 		free(var_aux);
 					 		//printf("4");
-					 		printf("VALUE:%s\n", aux3);
+					 		//printf("VALUE:%s\n", aux3);
 					 	}else{
 				 		
 				 	//printf("\nINICIO\n"); 
@@ -328,7 +358,7 @@ S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
 							 		char *route=get_route(glob.gl_pathv[0]);	
 									
 									if (route){
-										printf("%s\n", route);
+										//printf("%s\n", route);
 										char *arr[glob.gl_pathc+1];
 										for(i=0;i < glob.gl_pathc; i++ ){
 											arr[i]=glob.gl_pathv[i];
@@ -352,7 +382,7 @@ S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
 						return 0;
 					 	break;
 					 case -1:
-					 	printf("\n fail \n");
+					 	//printf("\n fail \n");
 					 	fprintf(stderr, "for failed");
 					 	return 1;
 					 	break;
@@ -366,15 +396,18 @@ S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
 				 dup2(output,1);
 				 close(input);
 				 close(output);
-				 
-				 int status;
-				// for(int x=0;x<num;x++){ 
-    			waitpid(-1, &status, 0);
-    			if WIFEXITED(status){
-    				printf("Fin hijo:%d\n", status);
-    				//} 
+				
+				if (!notwait){
+					int status;
+					printf("ultimo %d \n",child);
+					for(int x=0;x<num;x++){ 
+					int pid=waitpid(-1, &status, 0);
+						if WIFEXITED(status){
+							printf("Fin hijo %d :%d\n",pid, status);
+    					} 
+     				}
      			}
-     			printf("Fin todos los hijo:\n");
+     		//	printf("Fin todos los hijo:\n");
 				//printf("\n3:\n%s",text2);
 				//print_all(list_comand);
 				free_all(list_comand);

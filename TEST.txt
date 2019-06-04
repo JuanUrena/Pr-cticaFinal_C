@@ -1,4 +1,3 @@
-a|b c d| ef g e
-
- 
-a|b c d| ef g e
+echo hola
+x=y
+echo $x

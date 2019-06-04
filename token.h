@@ -28,20 +28,21 @@ char* env_variable(char *word){
 	//quizas meterlo en buble que lo haga sea recortar hasta que me quede mi palabra sin ningun elemento raro $%&%....
 	if (pointer){
 		var=strtok(pointer,"$");
-		printf("\nPAlabra\n%s\n",var);
+		//printf("\nPAlabra\n%s\n",var);
 		
 		if (var){
 			aux=(getenv(var));
-			printf("\nPalabra\n%s\n",aux);
+			//printf("\nPalabra\n%s\n",aux);
 			if (aux){
-				printf("dir:%d\n", *aux);
+			//	printf("dir:%d\n", *aux);
 				free(word);
 				
 				char *resolve=strdup(aux);
-				printf("VAR\n%s\n", word);
+				//printf("VAR\n%s\n", word);
 				return resolve;
 			}else{
-				printf("AQUI VA UN ERROR");
+				fprintf(stderr, "for failed");
+				exit(1);
 			}
 		}
 	}

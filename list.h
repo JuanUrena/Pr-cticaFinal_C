@@ -60,13 +60,13 @@ void print(struct list *mylist){
 	//printf("\nd:\n%d",mylist->number_element);
 	while(i<mylist->number_element){
 		char *word=strdup(aux->ins);
-		printf("\n%d:%s",i, word);
+		//printf("\n%d:%s",i, word);
 		free(word);
 		aux=aux->next;
 		i++;
 	//	printf("\nvuelta");
 	} 
-	printf("\nFIN");
+	//printf("\nFIN");
 };
 
 void print_all(struct comands *cmdlist){
@@ -74,7 +74,7 @@ void print_all(struct comands *cmdlist){
 	struct comands *aux;
 	aux=cmdlist;
 	while(aux){
-		printf("\nNuevo comando\n");
+		//printf("\nNuevo comando\n");
 		print(aux->list);
 		aux=aux->next;
 	} 
