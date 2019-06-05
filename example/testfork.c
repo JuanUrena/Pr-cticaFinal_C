@@ -8,18 +8,20 @@
 void forkexample(){ 
 	
    /* for loop execution */
-   	char *aux=strdup("hola");
-   
+   	char *aux=strdup("x=hola");
+   	int a=0;
 	// child process because return value zero 
 	if (fork()){
-			free(aux);
-			printf("Hello from Parent!: %s\n",aux);
+		if (fork()){
+			a=putenv(aux);
+			printf("Hello from parent!: %s\n",getenv("x"));
+		}else{
+			printf("Hello from child!: %s\n",getenv("x"));
+		}
 	}else{
-			printf("Hello from Child!: %s\n", aux);
-			printf("Hello from Child!: %s\n", aux);
-			printf("Hello from Child!: %s\n", aux);
-			printf("Hello from Child!: %s\n", aux);
-			
+
+		printf("Hello from child!: %d\n",a);
+		printf("Hello from child!: %s\n",getenv("x"));
 	}
 	//char *pepe=strdup("hola");
 

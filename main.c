@@ -103,15 +103,16 @@ void generate_array(glob_t glob, char *arr[glob.gl_pathc+1]){
 
 
 // Function to execute builtin commands 
-int ownCmdHandler(char *comand) 
+int ownCmdHandler(glob_t glob) 
 { 
     int NoOfOwnCmds = 1, i, switchOwnArg = 0; 
     char* ListOfOwnCmds[NoOfOwnCmds]; 
    
+   	int result=1;
     ListOfOwnCmds[0] = "cd";  
-  
+    
     for (i = 0; i < NoOfOwnCmds; i++) { 
-        if (strcmp(comand, ListOfOwnCmds[i]) == 0) { 
+        if (strcmp(glob.gl_pathv[0], ListOfOwnCmds[i]) == 0) { 
             switchOwnArg = i + 1; 
             break; 
         } 
@@ -119,12 +120,19 @@ int ownCmdHandler(char *comand)
   
     switch (switchOwnArg) { 
     case 1: 
-       printf("CD"); 
-        return 1; 
+		printf("CD");
+		char *home;
+		if (glob.gl_pathc>1){
+			home=glob.gl_pathv[1];
+		}else{
+			home=getenv("HOME");
+		}
+		result=chdir(home);
+        return result; 
     default: 
         break; 
     } 
-    return 0; 
+    return 1; 
 } 
 
 
@@ -271,7 +279,8 @@ int main(int argc, char *argv[])
 					
 					while (list_comand2!=NULL){
 					
-					check_var=check_var_value(list_comand2->list->first->ins);
+						check_var=check_var_value(list_comand2->list->first->ins);
+						
 						//printf("AQUI:::%d\n", check_var->var); 	
 					 	if (check_var->var){
 					 		//printf("VALUE1:%s\n", check_var->value);
@@ -300,103 +309,104 @@ int main(int argc, char *argv[])
 					 		//printf("4");
 					 		//printf("VALUE:%s\n", aux3);
 					 	}else{
+					 		subs_env(list_comand2->list);
+							glob_t glob=getFiles(list_comand2->list);
+					 		if(ownCmdHandler(glob)){
 				 		
 				 	//printf("\nINICIO\n"); 
 				 	//getFiles(list_comand2->list);//globbing
 				 	//Como hacer el globbing y a la vez la expansion del comando, o quizas deba hacerlo luego sobre valor y value?¿?¿?¿
-				 	dup2(in,0);
-				 	close (in);
-				 	
-				 	if(num==ins_list->number_element-1){
-						if (cmd_line->out){
-							remove_spaces(cmd_line->out);							
-							//estamos quitando espacios sin mas, si estan en medio dejarlos?¿
-							//valorar la opcion de append si tiene >>?¿?¿?
-							out=open(cmd_line->out, O_WRONLY|O_CREAT, 
-S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
-						} else{
-							out=dup(output);
-						}
-					}else{
-						
-						int fd[2];
-						pipe(fd);
-						out=fd[1];
-						in=fd[0];
-					}
-					dup2(out,1);
-					close(out);
-				 	
-				 	child=fork();
-					switch(child){
-					case 0:
-						//Primero, redirigir mi entrada al fichero
-						//utlimo, redirijo mi salida
-						
-					/*	for (int j=0; j<(ins_list->number_element-1); j++){
-							if(j==num){
-								printf("salida:::%d\n", j);
-								dup2(conex[j][1], 1);
-								close(conex[j][0]);
-							}else if (j==(num-1)){
-								printf("entrada:::%d\n", j); 	
-								dup2(conex[j][0], 0);
-								close(conex[j][1]);
-							}else{
-								close(conex[j][0]);
-								close(conex[j][1]);
+					 	dup2(in,0);
+					 	close (in);
+					 	
+					 	if(num==ins_list->number_element-1){
+							if (cmd_line->out){
+								remove_spaces(cmd_line->out);							
+								//estamos quitando espacios sin mas, si estan en medio dejarlos?¿
+								//valorar la opcion de append si tiene >>?¿?¿?
+								out=open(cmd_line->out, O_WRONLY|O_CREAT, 
+	S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
+							} else{
+								out=dup(output);
 							}
-						} */
+						}else{
 						
-					 		subs_env(list_comand2->list);
-					 		glob_t glob=getFiles(list_comand2->list);//globbing
-					 		//Comprobar el free
-					 		
-					 		if (glob.gl_pathc){
-					 			if (!ownCmdHandler(glob.gl_pathv[0])){
-					 			
-							 		char *route=get_route(glob.gl_pathv[0]);	
-									
-									if (route){
-										//printf("%s\n", route);
-										char *arr[glob.gl_pathc+1];
-										for(i=0;i < glob.gl_pathc; i++ ){
-											arr[i]=glob.gl_pathv[i];
-										}
-										arr[i]=NULL; 
-										execv(route,arr);
-										
-									}else{
-									
-									exit (0);
-									}
+							int fd[2];
+							pipe(fd);
+							out=fd[1];
+							in=fd[0];
+						}
+						dup2(out,1);
+						close(out);
+					 	
+					 	child=fork();
+						switch(child){
+						case 0:
+							//Primero, redirigir mi entrada al fichero
+							//utlimo, redirijo mi salida
+						
+						/*	for (int j=0; j<(ins_list->number_element-1); j++){
+								if(j==num){
+									printf("salida:::%d\n", j);
+									dup2(conex[j][1], 1);
+									close(conex[j][0]);
+								}else if (j==(num-1)){
+									printf("entrada:::%d\n", j); 	
+									dup2(conex[j][0], 0);
+									close(conex[j][1]);
+								}else{
+									close(conex[j][0]);
+									close(conex[j][1]);
 								}
-						 		globfree(&glob);
-						 	}
-					 	free_all(list_comand);
-						free_list(ins_list);
-						free(cmd_line->comand);
-						free(cmd_line->in);
-						free(cmd_line->out);
-						free(cmd_line);
-						return 0;
-					 	break;
-					 case -1:
-					 	//printf("\n fail \n");
-					 	fprintf(stderr, "for failed");
-					 	return 1;
-					 	break;
-					 }
-					 num++;
+							} */
+						
+						 		//globbing
+						 		//Comprobar el free
+						 		
+						 		if (glob.gl_pathc){
+						 			
+								 		char *route=get_route(glob.gl_pathv[0]);	
+									
+										if (route){
+											//printf("%s\n", route);
+											char *arr[glob.gl_pathc+1];
+											for(i=0;i < glob.gl_pathc; i++ ){
+												arr[i]=glob.gl_pathv[i];
+											}
+											arr[i]=NULL; 
+											execv(route,arr);
+										
+										}else{
+									
+										exit (0);
+										}
+							 		globfree(&glob);
+							 	}
+						 	free_all(list_comand);
+							free_list(ins_list);
+							free(cmd_line->comand);
+							free(cmd_line->in);
+							free(cmd_line->out);
+							free(cmd_line);
+							return 0;
+						 	break;
+						 case -1:
+						 	//printf("\n fail \n");
+						 	fprintf(stderr, "for failed");
+						 	return 1;
+						 	break;
+						 }
+						 num++;
+						}
+						globfree(&glob);
 					}	
 				 	list_comand2=list_comand2->next;
 				 	
-				 }
-				 dup2(input, 0);
-				 dup2(output,1);
-				 close(input);
-				 close(output);
-				
+				}
+				dup2(input, 0);
+				dup2(output,1);
+				close(input);
+				close(output);
 				if (!notwait){
 					int status;
 					printf("ultimo %d \n",child);
