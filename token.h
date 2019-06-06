@@ -2,6 +2,7 @@ struct param_cmd{
 	char *comand;
 	char *in;
 	char *out;
+	int wait;
 };
 
 struct value_var{
@@ -10,7 +11,7 @@ struct value_var{
 	char *value;
 };
 
-struct list* tokenizar(char *line, char *cut);
+
 struct param_cmd* get_in_out(char *line);
 struct value_var* check_var_value(char *ins);
 char* env_variable(char *word);
@@ -79,6 +80,25 @@ struct value_var* check_var_value(char *ins){
 //	printf("\nAQUI%s", param->value);
 	return param;
 };
+
+int check_lastchar(char *phrase, char letter)
+{
+	int i=1;
+	int result =0;
+	int l=strlen(phrase);
+	while(i<=l){
+	//SWITCH?¿?
+		if(phrase[l-i]==letter){
+			result=1;
+			i=l+1;
+		}else if(phrase[l-i]==' '){
+			i++;
+		}else{
+			i=l+1;
+		}
+	}
+	return result;
+}
  
 struct param_cmd* get_in_out(char *line){
 	char *in;
@@ -91,6 +111,12 @@ struct param_cmd* get_in_out(char *line){
 	
 	in=strchr(aux,'<');
 	out=strchr(aux,'>');
+	
+	if (check_lastchar(line,'&')){
+		param->wait=0;
+	}else{
+		param->wait=1;
+	}
 	
 	if (in!=NULL && out!=NULL){
 		if (strlen(in)>strlen(out)){
@@ -197,29 +223,4 @@ struct param_cmd* get_in_out(char *line){
 	return param;*/
 };
 
-struct list* tokenizar(char *line, char *cut){
-	struct list *mylist;
-	
-	mylist=(struct list *)malloc(sizeof(struct list));
-	mylist->first=NULL;
-	mylist->number_element=0;
 
-	//printf("\n2:%s",line);
-	char *copy = strdup(line);
-	char *token;
-	//printf("\n3:\n%s",copy);
-	token=strtok(copy, cut);
-	
-	while(token != NULL ) {
-		//printf("\n3:\n%d\n",*token);
-		char *aux=strdup(token);
-		add_element(mylist, token);
-		free(aux);
-		token = strtok(NULL, cut);
-	}
-	free(copy);	
-	
-	//print(mylist);
-	//printf("\nFIN");
-	return mylist;
-};

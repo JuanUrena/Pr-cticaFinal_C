@@ -16,11 +16,80 @@ struct comands{
 	struct comands *next;
 };
 
+struct list* tokenizar(char *line, char *cut);
 void add_element(struct list *mylist, char *new_ins);
 void print(struct list *mylist);
 void print_all(struct comands *cmdlist);
 void free_list(struct list *mylist);
 void free_all(struct comands *cmdlist);
+struct comands* cmdlist2cmdmatrix(struct list *ins_list);
+
+
+struct comands* golast(struct comands *list){
+	struct comands *list2=list;
+	struct comands *aux;
+	while (list2){
+		aux=list2;
+		list2=list2->next;
+	}
+	return aux;
+}
+struct list* tokenizar(char *line, char *cut){
+	struct list *mylist;
+	
+	mylist=(struct list *)malloc(sizeof(struct list));
+	mylist->first=NULL;
+	mylist->number_element=0;
+
+	//printf("\n2:%s",line);
+	char *copy = strdup(line);
+	char *token;
+	//printf("\n3:\n%s",copy);
+	token=strtok(copy, cut);
+	
+	while(token != NULL ) {
+		//printf("\n3:\n%d\n",*token);
+		char *aux=strdup(token);
+		add_element(mylist, token);
+		free(aux);
+		token = strtok(NULL, cut);
+	}
+	free(copy);	
+	
+	//print(mylist);
+	//printf("\nFIN");
+	return mylist;
+};
+
+
+struct comands* cmdlist2cmdmatrix(struct list *ins_list){
+	struct comands *list_comand;
+	struct comands *list_comand2;
+	struct comands *aux;
+	
+	struct cell *ins=ins_list->first;
+	int i=0;
+	
+	while(i<ins_list->number_element){
+		struct list *arg_list=tokenizar(ins->ins, " ");
+		if(!i){
+			list_comand=(struct comands *) malloc (sizeof(struct comands));
+			list_comand->list=NULL;
+			list_comand->next=NULL;
+			list_comand->list=arg_list;
+		}else{
+			aux= golast(list_comand);
+			list_comand2=(struct comands *) malloc (sizeof(struct comands));
+			list_comand2->next=NULL;
+			list_comand2->list=arg_list;
+			aux->next=list_comand2;
+		}
+		ins=ins->next;
+		i++;
+	}
+	return list_comand;
+}
+
 
 
 
