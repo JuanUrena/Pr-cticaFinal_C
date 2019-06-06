@@ -28,7 +28,9 @@ void forkexample(){
 	// parent process because return value non-zero. 
 }
 int main() { 
-	forkexample(); 
+	//forkexample();
+	char *c="hola";
+	printf("%zd\n", strlen(c));
 	return 0; 
 }
 

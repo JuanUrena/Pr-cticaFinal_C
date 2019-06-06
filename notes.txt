@@ -1,15 +1,17 @@
-Revisar los posibles leeks de memoria con strtok
+Revisar los posibles leeks de memoria con strtok.
 
-info util para el builtin
+										info util para el builtin
 
-    int NoOfOwnCmds = 4, i, switchOwnArg = 0; 
-    char* ListOfOwnCmds[NoOfOwnCmds]; 
-    char* username; 
-  
-    ListOfOwnCmds[0] = "exit"; 
-    ListOfOwnCmds[1] = "cd"; 
-    ListOfOwnCmds[2] = "help"; 
-    ListOfOwnCmds[3] = "hello"; 
+											int NoOfOwnCmds = 4, i, switchOwnArg = 0; 
+											char* ListOfOwnCmds[NoOfOwnCmds]; 
+											char* username; 
+										  
+											ListOfOwnCmds[0] = "exit"; 
+											ListOfOwnCmds[1] = "cd"; 
+											ListOfOwnCmds[2] = "help"; 
+											ListOfOwnCmds[3] = "hello"; 
+		
     
-    
-    Hay que agregar el error cuando la variable de error no existe.
+Hay que agregar el error cuando la variable de error no existe.
+
+Generar gitignore y depurar todo el repositorio.
