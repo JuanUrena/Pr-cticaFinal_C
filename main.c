@@ -16,6 +16,11 @@
 #include "rutes.h"
 
 
+struct 	conex{
+	int input;
+	int output;
+};
+
 //Comprueba que el ultimo char distinto de espacio en blanco es el indicado
 /*int check_lastchar(char *phrase, char letter)
 {
@@ -128,12 +133,81 @@ int ownCmdHandler(glob_t glob)
 	return 1; 
 } 
 
+int waitchilds(){
+	int childs;
+	do {
+		int  status;
+		childs=wait(&status);
+		if(status == -1) {
+			perror("Error during wait()");
+			return(1);
+		}
+	} while (childs > 0);
+								
+	printf("\n-----FIN-----");
+	return(0);
+}
+
+void son_code(glob_t glob){
+	int i=0;
+	if (glob.gl_pathc){
+		char *route=get_route(glob.gl_pathv[0]);	
+		if (route){
+		//printf("%s\n", route);
+			char *arr[glob.gl_pathc+1];
+			for(i=0;i < glob.gl_pathc; i++ ){
+				arr[i]=glob.gl_pathv[i];
+			}
+			arr[i]=NULL; 
+			execv(route,arr);			
+		}else{
+			exit (0);
+		}
+		globfree(&glob);
+	}
+}
+
+void env_var_code(struct value_var *check_var){
+
+	check_var->variable=env_variable(check_var->variable);
+	check_var->value=env_variable(check_var->value);
+	 						 
+	char *var_form=prepare_value(check_var->value);
+	
+	setenv(check_var->variable, var_form, 1);					 		
+	free(check_var->variable);
+	free(var_form);
+}
+
+
+struct conex* modelate_pipe(int i, int total,char *file, int output){
+	int in=0;
+	int out=0;
+	struct conex *result=(struct conex*) malloc (sizeof(struct conex));
+	if(i==total){
+		if (file){
+			remove_spaces(file);							
+			out=open(file, O_WRONLY|O_CREAT, 
+	S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
+		} else{
+			out=dup(output);
+		}
+	}else{
+		int fd[2];
+		pipe(fd);
+		out=fd[1];
+		in=fd[0];
+	}
+	result->input=in;
+	result->output=out;
+	return result;
+}
 
 
 int main(int argc, char *argv[])
 {
 	char *text;
-
+	struct conex *pipe_conex;
 	struct list *ins_list;
 	struct list *arg_list;
 	//struct cell *ins;
@@ -148,61 +222,25 @@ int main(int argc, char *argv[])
 		list_comand=NULL;
 		arg_list=(struct list *) malloc (sizeof(struct list));
 		free(arg_list);
-		int i=0;
+		//int i=0;
 	//La linea de comandos
 		text=read_line();
 	//compruebo si es EOF
 		if(text){
 			if (!strlen(text)){
 				free(text); 
-				int childs;
-				do {
-					int  status;
-					childs=wait(&status);
-					if(status == -1) {
-						perror("Error during wait()");
-						abort();
-					}
-				} while (childs > 0);
-								
-				printf("\n-----FIN-----");
-				return 0;
+				exit(waitchilds());
 			}
+			//
 			replace_char(text, '\t', ' ');
 			cmd_line=get_in_out(text);
-			
 			free(text);
+			
 			if (cmd_line->comand){
 				ins_list=tokenizar(cmd_line->comand, "|");
 				list_comand=cmdlist2cmdmatrix(ins_list);
-			/*	ins=ins_list->first;
-				i=0;
-				while(i<ins_list->number_element){
-
-					arg_list=tokenizar(ins->ins, " ");
-					if(!list_comand){
-						list_comand=(struct comands *) malloc (sizeof(struct comands));
-						list_comand->list=NULL;
-						list_comand->next=NULL;
-					
-						list_comand->list=arg_list;
-					}else{
-						list_comand2=list_comand;
-						while (list_comand2){
-							aux=list_comand2;
-							list_comand2=list_comand2->next;
-						}
-						list_comand2=(struct comands *) malloc (sizeof(struct comands));
-						list_comand2->next=NULL;
-						list_comand2->list=arg_list;
-						aux->next=list_comand2;
-					}
-				
-					ins=ins->next;
-				
-					i++;
-				}*/
 				list_comand2=list_comand;
+				
 				struct value_var *check_var;
 					
 				int input=dup(0);
@@ -222,7 +260,6 @@ int main(int argc, char *argv[])
 				}
 					
 				int child;
-				int out;
 					
 				while (list_comand2!=NULL){
 					
@@ -230,63 +267,29 @@ int main(int argc, char *argv[])
 						
 
 					if (check_var->var){
-					 		
-						check_var->variable=env_variable(check_var->variable);
-						check_var->value=env_variable(check_var->value); 						 
-						char *var_aux=prepare_value(check_var->value);
-						setenv(check_var->variable, var_aux, 1);					 		
-						free(check_var->variable);
-						free(check_var);
-						free(var_aux);
+						env_var_code(check_var);
 					}else{
 						subs_env(list_comand2->list);
 						glob_t glob=getFiles(list_comand2->list);
 						if(ownCmdHandler(glob)){
 							dup2(in,0);
 							close (in);
-					 	
-							if(num==ins_list->number_element-1){
-								if (cmd_line->out){
-									remove_spaces(cmd_line->out);							
-									out=open(cmd_line->out, O_WRONLY|O_CREAT, 
-	S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
-								} else{
-									out=dup(output);
-								}
-							}else{
-								int fd[2];
-								pipe(fd);
-								out=fd[1];
-								in=fd[0];
-							}
-							dup2(out,1);
-							close(out);
-					 	
+					 		pipe_conex=modelate_pipe(num, ins_list->number_element-1,cmd_line->out,output);
+							in=pipe_conex->input;
+							dup2(pipe_conex->output,1);
+							close(pipe_conex->output);
+					 		free(pipe_conex);
 							child=fork();
 							switch(child){
 							case 0:
-								if (glob.gl_pathc){
-									char *route=get_route(glob.gl_pathv[0]);	
-									if (route){
-											//printf("%s\n", route);
-										char *arr[glob.gl_pathc+1];
-										for(i=0;i < glob.gl_pathc; i++ ){
-											arr[i]=glob.gl_pathv[i];
-										}
-										arr[i]=NULL; 
-										execv(route,arr);			
-									}else{
-										exit (0);
-									}
-							 		globfree(&glob);
-							 	}
+								son_code(glob);
+							 	//liberar antes del exe pero no se hasta que punto puedo liberar
 						 		free_all(list_comand);
 								free_list(ins_list);
 								free(cmd_line->comand);
 								free(cmd_line->in);
 								free(cmd_line->out);
 								free(cmd_line);
-								return 0;
 						 		break;
 							case -1:
 						 	//printf("\n fail \n");
