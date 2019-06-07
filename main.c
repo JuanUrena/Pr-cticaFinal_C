@@ -203,6 +203,37 @@ struct conex* modelate_pipe(int i, int total,char *file, int output){
 	return result;
 }
 
+struct param_cmd* process_line(char *cmd_line){
+	struct param_cmd *param_cmd_line;
+	
+	if(cmd_line){
+		if (!strlen(cmd_line)){
+			free(cmd_line); 
+			exit(waitchilds());
+		}
+			//
+		replace_char(cmd_line, '\t', ' ');
+		param_cmd_line=get_in_out(cmd_line);
+		free(cmd_line);
+		return param_cmd_line;
+	}else{
+		return NULL;
+	}
+}
+
+int process_input(char* file, int wait, int input){
+	int in;
+	if (file){
+	//estamos quitando espacios sin mas, si estan en medio dejarlos?¿
+		remove_spaces(file);
+		in=open(file, O_RDONLY);
+	}else if(!wait){
+		in =open("/dev/null",O_RDONLY); 
+	} else{
+		in =dup(input);
+	}
+	return in;
+}
 
 int main(int argc, char *argv[])
 {
@@ -226,104 +257,88 @@ int main(int argc, char *argv[])
 	//La linea de comandos
 		text=read_line();
 	//compruebo si es EOF
-		if(text){
-			if (!strlen(text)){
-				free(text); 
-				exit(waitchilds());
-			}
-			//
-			replace_char(text, '\t', ' ');
-			cmd_line=get_in_out(text);
-			free(text);
+		cmd_line=process_line(text);
+		if (cmd_line && cmd_line->comand){
+			ins_list=tokenizar(cmd_line->comand, "|");
+			list_comand=cmdlist2cmdmatrix(ins_list);
+			list_comand2=list_comand;
 			
-			if (cmd_line->comand){
-				ins_list=tokenizar(cmd_line->comand, "|");
-				list_comand=cmdlist2cmdmatrix(ins_list);
-				list_comand2=list_comand;
+			struct value_var *check_var;
 				
-				struct value_var *check_var;
+			int input=dup(0);
+			int output=dup(1);
+								
+			int num=0;
+				
+			int in =process_input(cmd_line->in, cmd_line->wait, input);
+			int child;
 					
-				int input=dup(0);
-				int output=dup(1);
-									
-				int num=0;
+			while (list_comand2!=NULL){
 					
-				int in;
-				if (cmd_line->in){
-					//estamos quitando espacios sin mas, si estan en medio dejarlos?¿
-					remove_spaces(cmd_line->in);
-					in=open(cmd_line->in, O_RDONLY);
-				}else if(!cmd_line->wait){
-					in =open("/dev/null",O_RDONLY); 
-				} else{
-					in =dup(input);
-				}
-					
-				int child;
-					
-				while (list_comand2!=NULL){
-					
-					check_var=check_var_value(list_comand2->list->first->ins);
+				check_var=check_var_value(list_comand2->list->first->ins);
 						
 
-					if (check_var->var){
-						env_var_code(check_var);
-					}else{
-						subs_env(list_comand2->list);
-						glob_t glob=getFiles(list_comand2->list);
-						if(ownCmdHandler(glob)){
-							dup2(in,0);
-							close (in);
-					 		pipe_conex=modelate_pipe(num, ins_list->number_element-1,cmd_line->out,output);
-							in=pipe_conex->input;
-							dup2(pipe_conex->output,1);
-							close(pipe_conex->output);
-					 		free(pipe_conex);
-							child=fork();
-							switch(child){
-							case 0:
-								son_code(glob);
-							 	//liberar antes del exe pero no se hasta que punto puedo liberar
-						 		free_all(list_comand);
-								free_list(ins_list);
-								free(cmd_line->comand);
-								free(cmd_line->in);
-								free(cmd_line->out);
-								free(cmd_line);
-						 		break;
-							case -1:
-						 	//printf("\n fail \n");
-						 		fprintf(stderr, "for failed");
-						 		return 1;
-						 		break;
-						 	}
-							num++;
-						}
-						globfree(&glob);
+				if (check_var->var){
+					env_var_code(check_var);
+				}else{
+					subs_env(list_comand2->list);
+					glob_t glob=getFiles(list_comand2->list);
+					if(ownCmdHandler(glob)){
+						dup2(in,0);
+						close (in);
+						
+				 		pipe_conex=modelate_pipe(num, ins_list->number_element-1,cmd_line->out,output);
+				 		
+						in=pipe_conex->input;
+						dup2(pipe_conex->output,1);
+						close(pipe_conex->output);
+						
+				 		free(pipe_conex);
+				 		
+						child=fork();
+						switch(child){
+						case 0:
+							son_code(glob);
+						 	//liberar antes del exe pero no se hasta que punto puedo liberar
+					 		free_all(list_comand);
+							free_list(ins_list);
+							free(cmd_line->comand);
+							free(cmd_line->in);
+							free(cmd_line->out);
+							free(cmd_line);
+					 		break;
+						case -1:
+					 	//printf("\n fail \n");
+					 		fprintf(stderr, "for failed");
+					 		return 1;
+					 		break;
+					 	}
+						num++;
 					}
-					list_comand2=list_comand2->next;
+					globfree(&glob);
 				}
-				dup2(input, 0);
-				dup2(output,1);
-				close(input);
-				close(output);
-				if (cmd_line->wait){
-					int status;
-					printf("ultimo %d \n",child);
-					for(int x=0;x<num;x++){ 
-						int pid=waitpid(-1, &status, 0);
-						if WIFEXITED(status){
-							printf("Fin hijo %d :%d\n",pid, status);
-    					} 
-     				}
-     			}
-				free_all(list_comand);
-				free_list(ins_list);
-				free(cmd_line->comand);
-				free(cmd_line->in);
-				free(cmd_line->out);
-				free(cmd_line);				
+				list_comand2=list_comand2->next;
 			}
+			dup2(input, 0);
+			dup2(output,1);
+			close(input);
+			close(output);
+			if (cmd_line->wait){
+				int status;
+				printf("ultimo %d \n",child);
+				for(int x=0;x<num;x++){ 
+					int pid=waitpid(-1, &status, 0);
+					if WIFEXITED(status){
+						printf("Fin hijo %d :%d\n",pid, status);
+   					} 
+   				}
+   			}
+			free_all(list_comand);
+			free_list(ins_list);
+			free(cmd_line->comand);
+			free(cmd_line->in);
+			free(cmd_line->out);
+			free(cmd_line);				
 		}
 
 	}while(1);
