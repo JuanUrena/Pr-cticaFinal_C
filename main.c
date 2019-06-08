@@ -134,6 +134,8 @@ int ownCmdHandler(glob_t glob)
 
 int waitchilds(){
 	int childs;
+	int lastchild=0;
+	int result=1;
 	do {
 		int  status;
 		childs=wait(&status);
@@ -141,10 +143,14 @@ int waitchilds(){
 			perror("Error during wait()");
 			return(1);
 		}
+		if (childs>lastchild){
+			result=status;
+			lastchild=childs;
+		}
 	} while (childs > 0);
 								
 	printf("\n-----FIN-----");
-	return(0);
+	return(result);
 }
 
 void son_code(glob_t glob){
@@ -262,6 +268,22 @@ int process_input(char* file, int wait, int input){
 	return in;
 }
 
+int wait_cmd_child(int num_child, int last_child)
+{
+	printf("ultimo %d \n",last_child);
+	int status;
+	int result=1;
+	for(int x=0;x<num_child;x++){ 
+		int pid=waitpid(-1, &status, 0);
+		if WIFEXITED(status){
+			if (pid==last_child){
+				result=status;
+			}
+   		} 
+	}
+	return result;
+}
+   
 int main(int argc, char *argv[])
 {
 	char *text;
@@ -330,7 +352,6 @@ int main(int argc, char *argv[])
 							son_code(glob);
 						 	//liberar antes del exe pero no se hasta que punto puedo liberar
 					 		free_all(list_comand);
-							
 							free(cmd_line->comand);
 							free(cmd_line->in);
 							free(cmd_line->out);
@@ -353,14 +374,8 @@ int main(int argc, char *argv[])
 			close(input);
 			close(output);
 			if (cmd_line->wait){
-				int status;
-				printf("ultimo %d \n",child);
-				for(int x=0;x<num;x++){ 
-					int pid=waitpid(-1, &status, 0);
-					if WIFEXITED(status){
-						printf("Fin hijo %d :%d\n",pid, status);
-   					} 
-   				}
+				int exit_cmd=wait_cmd_child(num, child);
+				printf("SALIDA:%d\n", exit_cmd);
    			}
 			free_all(list_comand);
 			free(cmd_line->comand);
