@@ -34,6 +34,7 @@ char* env_variable(char *word){
 char* get_route(char *program){
 	char *path=strdup(getenv("PATH"));
 	char *aux2;
+	char *aux;
 	aux2=strdup(program);
 	
 	if(!access(aux2, F_OK)){
@@ -42,14 +43,14 @@ char* get_route(char *program){
 	}
 		
 	free(aux2);
-	char *aux=strtok(path, ":");
+	aux=strtok(path, ":");
 	while (aux!=NULL){
 		aux2=calloc(1, strlen(aux)+strlen(program)+2);
-		
+
 		strcpy(aux2,aux);
 		strcat(aux2,"/");
 		strcat(aux2,program);
-		
+
 		if(!access(aux2, F_OK)){
 			free(path);
 			return aux2;
@@ -63,13 +64,11 @@ char* get_route(char *program){
 
 
 glob_t expand_arg(struct list *mylist){
-	
 	struct cell *iterator=mylist->first;
+	int i=1;
 	glob_t globbuf;
 	
-	glob(iterator->ins, GLOB_NOCHECK, NULL, &globbuf);
-	
-	int i=1;
+	glob(iterator->ins, GLOB_NOCHECK, NULL, &globbuf);	
 	
 	while (i<mylist->number_element){
 		iterator=iterator->next;

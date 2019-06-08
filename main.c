@@ -20,26 +20,6 @@ struct 	conex{
 	int output;
 };
 
-//Comprueba que el ultimo char distinto de espacio en blanco es el indicado
-/*int check_lastchar(char *phrase, char letter)
-{
-	int i=1;
-	int result =0;
-	int l=strlen(phrase);
-	while(i<=l){
-	//SWITCH?¿?
-		if(phrase[l-i]==letter){
-			result=1;
-			i=l+1;
-		}else if(phrase[l-i]==' '){
-			i++;
-		}else{
-			i=l+1;
-		}
-	}
-	return result;
-}*/
-
 
 //Elimina los espacios de un string
 void remove_spaces(char* source)
@@ -54,6 +34,7 @@ void remove_spaces(char* source)
 	*i = 0;
 }
 
+
 //sustituimos en la lista las posibles variables de entorno
 void subs_env(struct list *mylist){
 	int i=0;
@@ -66,6 +47,7 @@ void subs_env(struct list *mylist){
 	}
 }
 
+
 //Cambia en el string el char actual por el nuevo
 void replace_char(char* string, char actual, char new){
 	if (string){
@@ -77,14 +59,14 @@ void replace_char(char* string, char actual, char new){
 	}
 }
 
+
 //NO USADA ACTUALMENTE
 void generate_pipe(int num_pipes,int pipes[num_pipes][2]){
-
 	for(int i=0; i<num_pipes-1; i++){
 		if (pipe(pipes[i]) == -1) {
-        perror("pipe");
-        exit(EXIT_FAILURE);
-    	}
+			perror("pipe");
+			exit(EXIT_FAILURE);
+		}
 	}
 }
 
@@ -102,9 +84,10 @@ void generate_array(glob_t glob, char *arr[glob.gl_pathc+1]){
 // Function to execute builtin commands 
 int ownCmdHandler(glob_t glob) 
 { 
-	int NoOfOwnCmds = 1, i, switchOwnArg = 0; 
+	int NoOfOwnCmds = 1;
+	int i;
+	int switchOwnArg = 0; 
 	char* ListOfOwnCmds[NoOfOwnCmds]; 
-
 	int result=1;
 	ListOfOwnCmds[0] = "cd";  
 
@@ -132,12 +115,13 @@ int ownCmdHandler(glob_t glob)
 	return 1; 
 } 
 
+
 int waitchilds(){
 	int childs;
 	int lastchild=0;
 	int result=1;
-	do {
-		int  status;
+	int  status;
+	do {	
 		childs=wait(&status);
 		if(status == -1) {
 			perror("Error during wait()");
@@ -148,18 +132,20 @@ int waitchilds(){
 			lastchild=childs;
 		}
 	} while (childs > 0);
-								
+
 	printf("\n-----FIN-----");
 	return(result);
 }
 
+
 void son_code(glob_t glob){
 	int i=0;
+	char *route;
+	
 	if (glob.gl_pathc){
-		char *route=get_route(glob.gl_pathv[0]);	
-		if (route){
-		//printf("%s\n", route);
-			char *arr[glob.gl_pathc+1];
+		char *arr[glob.gl_pathc+1];
+		route=get_route(glob.gl_pathv[0]);	
+		if (route){	
 			for(i=0;i < glob.gl_pathc; i++ ){
 				arr[i]=glob.gl_pathv[i];
 			}
@@ -172,16 +158,14 @@ void son_code(glob_t glob){
 	}
 }
 
-char* prepare_value(char *word){
 
+char* prepare_value(char *word){
 	char *value=NULL;
 	glob_t globbuf;
+	int i;
 	
 	if (word){
 		glob(word, GLOB_NOCHECK, NULL, &globbuf);
-	
-		int i;
-		
 		for(i = 0; i < globbuf.gl_pathc; i++ ){
 			if (value){
 				value=(char *) realloc(value, strlen(value)+strlen(globbuf.gl_pathv[i])+2);
@@ -191,21 +175,21 @@ char* prepare_value(char *word){
 			}
 			strcat(value, globbuf.gl_pathv[i]);
 		}
-		globfree(&globbuf);
-		
+		globfree(&globbuf);		
 	}else{
 		value=strdup("\0");
 	}
-
 	return value;
 }
 
-void env_var_code(struct value_var *check_var){
 
+void env_var_code(struct value_var *check_var){
+	char *var_form;
+	
 	check_var->variable=env_variable(check_var->variable);
 	check_var->value=env_variable(check_var->value);
 	 						 
-	char *var_form=prepare_value(check_var->value);
+	var_form=prepare_value(check_var->value);
 	
 	setenv(check_var->variable, var_form, 1);					 		
 	free(check_var->variable);
@@ -216,6 +200,8 @@ void env_var_code(struct value_var *check_var){
 struct conex* modelate_pipe(int i, int total,char *file, int output){
 	int in=0;
 	int out=0;
+	int fd[2];
+	
 	struct conex *result=(struct conex*) malloc (sizeof(struct conex));
 	if(i==total){
 		if (file){
@@ -226,7 +212,6 @@ struct conex* modelate_pipe(int i, int total,char *file, int output){
 			out=dup(output);
 		}
 	}else{
-		int fd[2];
 		pipe(fd);
 		out=fd[1];
 		in=fd[0];
@@ -236,6 +221,7 @@ struct conex* modelate_pipe(int i, int total,char *file, int output){
 	return result;
 }
 
+
 struct param_cmd* process_line(char *cmd_line){
 	struct param_cmd *param_cmd_line;
 	
@@ -244,7 +230,6 @@ struct param_cmd* process_line(char *cmd_line){
 			free(cmd_line); 
 			exit(waitchilds());
 		}
-			//
 		replace_char(cmd_line, '\t', ' ');
 		param_cmd_line=param_line(cmd_line);
 		free(cmd_line);
@@ -294,76 +279,70 @@ int main(int argc, char *argv[])
 	struct comands *list_comand;
 	struct comands *list_comand2;
 	//struct comands *aux;
-	
+	struct value_var *check_var;
 	struct param_cmd *cmd_line;	
-
+	
+	int child;
+	int num=0;
+	int input=0;
+	int output=0;
+	int in;
+	int n_cmd;
   
 	do{
+		
 		list_comand=NULL;
 		arg_list=(struct list *) malloc (sizeof(struct list));
 		free(arg_list);
-		//int i=0;
-	//La linea de comandos
 		text=read_line();
-	//compruebo si es EOF
 		cmd_line=process_line(text);
 		if (cmd_line && cmd_line->comand){
 			ins_list=tokenizar(cmd_line->comand, "|");
-			int n_cmd=ins_list->number_element;
+			n_cmd=ins_list->number_element;
 			list_comand=cmdlist2cmdmatrix(ins_list);
 			free_list(ins_list);
 			list_comand2=list_comand;
-			
-			struct value_var *check_var;
-				
-			int input=dup(0);
-			int output=dup(1);
-								
-			int num=0;
-				
-			int in =process_input(cmd_line->in, cmd_line->wait, input);
-			int child;
-					
-			while (list_comand2!=NULL){
-					
+	
+			in =process_input(cmd_line->in, cmd_line->wait, input);
+			num=0;	
+			input=dup(0);
+			output=dup(1);
+			while (list_comand2!=NULL){				
 				check_var=check_var_value(list_comand2->list->first->ins);
-						
-
 				if (check_var->var){
 					env_var_code(check_var);
+					n_cmd--;
 				}else{
 					subs_env(list_comand2->list);
 					glob_t glob=expand_arg(list_comand2->list);
 					if(ownCmdHandler(glob)){
 						dup2(in,0);
 						close (in);
-						
-				 		pipe_conex=modelate_pipe(num, n_cmd-1,cmd_line->out,output);
-				 		
+
+						pipe_conex=modelate_pipe(num, n_cmd-1,cmd_line->out,output);	
 						in=pipe_conex->input;
 						dup2(pipe_conex->output,1);
 						close(pipe_conex->output);
-						
-				 		free(pipe_conex);
+						free(pipe_conex);
 				 		
 						child=fork();
 						switch(child){
 						case 0:
 							son_code(glob);
-						 	//liberar antes del exe pero no se hasta que punto puedo liberar
-					 		free_all(list_comand);
+							free_all(list_comand);
 							free(cmd_line->comand);
 							free(cmd_line->in);
 							free(cmd_line->out);
 							free(cmd_line);
-					 		break;
+							break;
 						case -1:
-					 	//printf("\n fail \n");
-					 		fprintf(stderr, "for failed");
-					 		return 1;
-					 		break;
-					 	}
+							fprintf(stderr, "for failed");
+							return 1;
+							break;
+						}
 						num++;
+					}else{
+						n_cmd--;
 					}
 					globfree(&glob);
 				}
@@ -376,7 +355,7 @@ int main(int argc, char *argv[])
 			if (cmd_line->wait){
 				int exit_cmd=wait_cmd_child(num, child);
 				printf("SALIDA:%d\n", exit_cmd);
-   			}
+			}
 			free_all(list_comand);
 			free(cmd_line->comand);
 			free(cmd_line->in);
@@ -385,6 +364,5 @@ int main(int argc, char *argv[])
 		}
 
 	}while(1);
-  
 	return 0;
 };
