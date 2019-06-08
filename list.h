@@ -34,6 +34,8 @@ struct comands* golast(struct comands *list){
 	}
 	return aux;
 }
+
+
 struct list* tokenizar(char *line, char *cut){
 	struct list *mylist;
 	
@@ -89,9 +91,6 @@ struct comands* cmdlist2cmdmatrix(struct list *ins_list){
 	}
 	return list_comand;
 }
-
-
-
 
 
 void add_element(struct list *mylist, char *new_ins){
@@ -171,9 +170,8 @@ void free_all(struct comands *cmdlist){
 	
 	while(cmdlist){
 		aux=cmdlist->next;
+		free_list(cmdlist->list);
 		free(cmdlist);
 		cmdlist=aux;
 	}
 }
-
-

@@ -11,9 +11,8 @@
 
 //Paquetes propios
 #include "list.h"
-#include "token.h"
-#include "read.h"
-#include "rutes.h"
+#include "input.h"
+#include "propsys.h"
 
 
 struct 	conex{
@@ -167,6 +166,34 @@ void son_code(glob_t glob){
 	}
 }
 
+char* prepare_value(char *word){
+
+	char *value=NULL;
+	glob_t globbuf;
+	
+	if (word){
+		glob(word, GLOB_NOCHECK, NULL, &globbuf);
+	
+		int i;
+		
+		for(i = 0; i < globbuf.gl_pathc; i++ ){
+			if (value){
+				value=(char *) realloc(value, strlen(value)+strlen(globbuf.gl_pathv[i])+2);
+				strcat(value, ":");
+			}else{
+				value=(char *) calloc(1,strlen(globbuf.gl_pathv[i])+1);
+			}
+			strcat(value, globbuf.gl_pathv[i]);
+		}
+		globfree(&globbuf);
+		
+	}else{
+		value=strdup("\0");
+	}
+
+	return value;
+}
+
 void env_var_code(struct value_var *check_var){
 
 	check_var->variable=env_variable(check_var->variable);
@@ -213,7 +240,7 @@ struct param_cmd* process_line(char *cmd_line){
 		}
 			//
 		replace_char(cmd_line, '\t', ' ');
-		param_cmd_line=get_in_out(cmd_line);
+		param_cmd_line=param_line(cmd_line);
 		free(cmd_line);
 		return param_cmd_line;
 	}else{
@@ -260,7 +287,9 @@ int main(int argc, char *argv[])
 		cmd_line=process_line(text);
 		if (cmd_line && cmd_line->comand){
 			ins_list=tokenizar(cmd_line->comand, "|");
+			int n_cmd=ins_list->number_element;
 			list_comand=cmdlist2cmdmatrix(ins_list);
+			free_list(ins_list);
 			list_comand2=list_comand;
 			
 			struct value_var *check_var;
@@ -282,12 +311,12 @@ int main(int argc, char *argv[])
 					env_var_code(check_var);
 				}else{
 					subs_env(list_comand2->list);
-					glob_t glob=getFiles(list_comand2->list);
+					glob_t glob=expand_arg(list_comand2->list);
 					if(ownCmdHandler(glob)){
 						dup2(in,0);
 						close (in);
 						
-				 		pipe_conex=modelate_pipe(num, ins_list->number_element-1,cmd_line->out,output);
+				 		pipe_conex=modelate_pipe(num, n_cmd-1,cmd_line->out,output);
 				 		
 						in=pipe_conex->input;
 						dup2(pipe_conex->output,1);
@@ -301,7 +330,7 @@ int main(int argc, char *argv[])
 							son_code(glob);
 						 	//liberar antes del exe pero no se hasta que punto puedo liberar
 					 		free_all(list_comand);
-							free_list(ins_list);
+							
 							free(cmd_line->comand);
 							free(cmd_line->in);
 							free(cmd_line->out);
@@ -334,7 +363,6 @@ int main(int argc, char *argv[])
    				}
    			}
 			free_all(list_comand);
-			free_list(ins_list);
 			free(cmd_line->comand);
 			free(cmd_line->in);
 			free(cmd_line->out);

@@ -20,7 +20,7 @@ struct value_var{
 };
 
 struct value_var* check_var_value(char *ins);
-struct param_cmd* process_line(char *line);
+struct param_cmd* param_line(char *line);
 char* read_line();
 
 
@@ -56,20 +56,19 @@ int check_lastchar(char *phrase, char letter)
 	int result =0;
 	int l=strlen(phrase);
 	while(i<=l){
-	//SWITCH?¿?
 		if(phrase[l-i]==letter){
 			result=1;
-			i=l+1;
+			break;
 		}else if(phrase[l-i]==' '){
 			i++;
 		}else{
-			i=l+1;
+			break;
 		}
 	}
 	return result;
 }
 
-struct param_cmd* process_line(char *line){
+struct param_cmd* param_line(char *line){
 	char *in;
 	char *out;
 	char *aux=line;
@@ -117,16 +116,16 @@ struct param_cmd* process_line(char *line){
 		param->in=NULL;		
 		param->comand=strdup(line);
 	}
-	//Comprobar si debido a los strtok estoy teniendo leek de memoria, debido a que me modifica mi string?¿?¿
 	return param;
 }
+
 
 char* read_line()
 {
 	char *line;
 	line=(char *)calloc(1,1);
 	char buffer[BUFFERSIZE];
-
+	
 	if (!line) {
 		fprintf(stderr, "lsh: allocation error\n");
 		exit(EXIT_FAILURE);
@@ -142,8 +141,8 @@ char* read_line()
 		
 		strcat(line, buffer);
 		if (buffer[strlen(buffer)-1]=='\n'){
-			line=strtok(line, "\n");
-			return line;
+			strtok(line, "\n");
+			break;
 		}  
 	}
 	return line;
