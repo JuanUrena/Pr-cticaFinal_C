@@ -272,6 +272,8 @@ int wait_cmd_child(int num_child, int last_child)
 int main(int argc, char *argv[])
 {
 	char *text;
+	char *here_line;
+	char *end;
 	struct conex *pipe_conex;
 	struct list *ins_list;
 	struct list *arg_list;
@@ -287,7 +289,9 @@ int main(int argc, char *argv[])
 	int input=0;
 	int output=0;
 	int in;
+	int out;
 	int n_cmd;
+	int fd[2];
   
 	do{
 		
@@ -302,12 +306,20 @@ int main(int argc, char *argv[])
 			list_comand=cmdlist2cmdmatrix(ins_list);
 			free_list(ins_list);
 			list_comand2=list_comand;
-	
-			in =process_input(cmd_line->in, cmd_line->wait, input);
-			num=0;	
+			
 			input=dup(0);
 			output=dup(1);
-			while (list_comand2!=NULL){				
+			//ext
+			if (cmd_line->here){
+				pipe(fd);
+				out=fd[1];
+				in=fd[0];
+			}else{
+				in =process_input(cmd_line->in, cmd_line->wait, input);
+			}
+			num=0;	
+			
+			while (list_comand2!=NULL){	
 				check_var=check_var_value(list_comand2->list->first->ins);
 				if (check_var->var){
 					env_var_code(check_var);
@@ -328,6 +340,7 @@ int main(int argc, char *argv[])
 						child=fork();
 						switch(child){
 						case 0:
+							close(fd[1]);
 							son_code(glob);
 							free_all(list_comand);
 							free(cmd_line->comand);
@@ -348,10 +361,30 @@ int main(int argc, char *argv[])
 				}
 				list_comand2=list_comand2->next;
 			}
+			close(fd[0]);
 			dup2(input, 0);
 			dup2(output,1);
-			close(input);
-			close(output);
+			if (cmd_line->here){
+				end=strdup("}");
+				char *buff=read_line();
+				here_line=(char *)calloc(1,1);
+				while(strcmp(buff, end)){
+					here_line=realloc(here_line, strlen(here_line)+2+strlen(buff));
+					strcat(here_line, buff);
+					strcat(here_line, "\n");
+					free(buff);
+					buff=read_line();
+				}
+				write(out, here_line, strlen(here_line));
+				free(here_line);
+				close(out);
+				free(here_line);
+				free(end);
+				dup2(input, 0);
+				dup2(output,1);
+				close(input);
+				close(output);
+			}
 			if (cmd_line->wait){
 				int exit_cmd=wait_cmd_child(num, child);
 				printf("SALIDA:%d\n", exit_cmd);

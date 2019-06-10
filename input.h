@@ -11,6 +11,7 @@ struct param_cmd{
 	char *in;
 	char *out;
 	int wait;
+	int here;
 };
 
 struct value_var{
@@ -50,6 +51,31 @@ struct value_var* check_var_value(char *ins){
 	return param;
 }
 
+int check_here(char *phrase)
+{
+	int i=1;
+	int result =0;
+	int l=strlen(phrase);
+	while(i<=l){
+		if(phrase[l-i]=='{' && l-i>3){
+		if (phrase[l-i-1]=='E' &&
+			phrase[l-i-2]=='R' &&
+			phrase[l-i-3]=='E' &&
+			phrase[l-i-4]=='H'){
+			result=1;
+			strtok(phrase, "HERE{");
+			}
+			break;
+		}else if(phrase[l-i]==' '){
+			i++;
+		}else{
+			break;
+		}
+	}
+	return result;
+}
+
+
 int check_lastchar(char *phrase, char letter)
 {
 	int i=1;
@@ -58,6 +84,7 @@ int check_lastchar(char *phrase, char letter)
 	while(i<=l){
 		if(phrase[l-i]==letter){
 			result=1;
+			phrase[l-i]=' ';
 			break;
 		}else if(phrase[l-i]==' '){
 			i++;
@@ -82,10 +109,11 @@ struct param_cmd* param_line(char *line){
 	
 	if (check_lastchar(line,'&')){
 		param->wait=0;
+		param->here=0;
 	}else{
 		param->wait=1;
+		param->here=check_here(line);
 	}
-
 	if (in!=NULL && out!=NULL){
 		if (strlen(in)>strlen(out)){
 			param->out=strdup(strtok(strtok(out,">"),"<"));
@@ -144,6 +172,6 @@ char* read_line()
 			strtok(line, "\n");
 			break;
 		}  
-	}
+	}			
 	return line;
 }
