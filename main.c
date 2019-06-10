@@ -211,7 +211,7 @@ struct conex* modelate_pipe(int i, int total,char *file, int output){
 	if(i==total){
 		if (file){
 			remove_spaces(file);							
-			out=open(file, O_WRONLY|O_CREAT, 
+			out=open(file, O_WRONLY|O_CREAT|O_TRUNC, 
 	S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
 		} else{
 			out=dup(output);
