@@ -29,9 +29,9 @@ int main(){
 	char *phrase=strdup("HERE");
 	int l=strlen(phrase);
 	
-	if (check_lastchar(phrase)){
+	if(!NULL){
 		printf("%d\n",l);
+		free(phrase);
 	}
-	free(phrase);
 	return 0;
 }

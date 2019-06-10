@@ -32,7 +32,10 @@ struct value_var* check_var_value(char *ins){
 	struct value_var *param;
 
 	param=(struct value_var *)malloc(sizeof(struct value_var));
-	
+	if (!param){
+		perror("Memory error");
+		exit(EXIT_FAILURE);
+	}
 	aux=strchr(ins, '=');
 	param->var=0;
 	if (aux!=NULL){
@@ -41,8 +44,16 @@ struct value_var* check_var_value(char *ins){
 		if (*var==*ins){
 			param->var=1;
 			param->variable=strdup(var);
+			if (!param->variable){
+				perror("Memory error");
+				exit(EXIT_FAILURE);
+			}
 			if (value){
 				param->value=strdup(value);
+				if (!param->value){
+					perror("Memory error");
+					exit(EXIT_FAILURE);
+				}
 			}else{
 				param->value=NULL;
 			}
@@ -50,6 +61,7 @@ struct value_var* check_var_value(char *ins){
 	}
 	return param;
 }
+
 
 int check_here(char *phrase)
 {
@@ -95,6 +107,7 @@ int check_lastchar(char *phrase, char letter)
 	return result;
 }
 
+
 struct param_cmd* param_line(char *line){
 	char *in;
 	char *out;
@@ -102,6 +115,10 @@ struct param_cmd* param_line(char *line){
 	struct param_cmd *param;
 	
 	param=(struct param_cmd *)malloc(sizeof(struct param_cmd ));
+	if (!param){
+		perror("Memory error");
+		exit(EXIT_FAILURE);
+	}
 	param->comand=NULL;
 	
 	in=strchr(aux,'<');
@@ -128,14 +145,26 @@ struct param_cmd* param_line(char *line){
 			strtok(line, ">");
 			param->comand=strdup(line);
 		}
+		if (!param->in || !param->out){
+			perror("Memory error");
+			exit(EXIT_FAILURE);
+		}
+		
 	}else if (in!=NULL){
 		param->in=strdup(strtok(in,"<"));
+		if (!param->in){
+			perror("Memory error");
+			exit(EXIT_FAILURE);
+		}
 		param->out=NULL;
-			
 		strtok(line, "<");
 		param->comand=strdup(line);
 	}else if (out!=NULL){
 		param->out=strdup(strtok(out,">"));
+		if (!param->out){
+			perror("Memory error");
+			exit(EXIT_FAILURE);
+		}
 		param->in=NULL;
 		strtok(line, ">");
 		param->comand=strdup(line);
@@ -144,6 +173,10 @@ struct param_cmd* param_line(char *line){
 		param->in=NULL;		
 		param->comand=strdup(line);
 	}
+	if (!param->comand){
+		perror("Memory error");
+		exit(EXIT_FAILURE);
+	}
 	return param;
 }
 
@@ -151,11 +184,12 @@ struct param_cmd* param_line(char *line){
 char* read_line()
 {
 	char *line;
-	line=(char *)calloc(1,1);
 	char buffer[BUFFERSIZE];
 	
+	line=(char *)calloc(1,1);
+	
 	if (!line) {
-		fprintf(stderr, "lsh: allocation error\n");
+		perror("Memory error");
 		exit(EXIT_FAILURE);
 	}
 	printf(">>>>");
@@ -163,10 +197,9 @@ char* read_line()
 	while(fgets(buffer, BUFFERSIZE , stdin) ){
 		line = realloc(line, strlen(line)+1+strlen(buffer) );
 		if (!line) {
-			fprintf(stderr, "lsh: allocation error\n");
+			perror("Memory error");
 			exit(EXIT_FAILURE);
 		}
-		
 		strcat(line, buffer);
 		if (buffer[strlen(buffer)-1]=='\n'){
 			strtok(line, "\n");

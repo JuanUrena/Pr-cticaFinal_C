@@ -60,17 +60,6 @@ void replace_char(char* string, char actual, char new){
 }
 
 
-//NO USADA ACTUALMENTE
-void generate_pipe(int num_pipes,int pipes[num_pipes][2]){
-	for(int i=0; i<num_pipes-1; i++){
-		if (pipe(pipes[i]) == -1) {
-			perror("pipe");
-			exit(EXIT_FAILURE);
-		}
-	}
-}
-
-
 //Funcion para generar el array desde mi lista
 void generate_array(glob_t glob, char *arr[glob.gl_pathc+1]){
 	int i=0;
@@ -169,15 +158,27 @@ char* prepare_value(char *word){
 		for(i = 0; i < globbuf.gl_pathc; i++ ){
 			if (value){
 				value=(char *) realloc(value, strlen(value)+strlen(globbuf.gl_pathv[i])+2);
+				if (!value){
+					perror("Memory error");
+					exit(EXIT_FAILURE);
+				}
 				strcat(value, ":");
 			}else{
 				value=(char *) calloc(1,strlen(globbuf.gl_pathv[i])+1);
+				if (!value){
+					perror("Memory error");
+					exit(EXIT_FAILURE);
+				}
 			}
 			strcat(value, globbuf.gl_pathv[i]);
 		}
 		globfree(&globbuf);		
 	}else{
 		value=strdup("\0");
+		if (!value){
+			perror("Memory error");
+			exit(EXIT_FAILURE);
+		}
 	}
 	return value;
 }
@@ -203,6 +204,10 @@ struct conex* modelate_pipe(int i, int total,char *file, int output){
 	int fd[2];
 	
 	struct conex *result=(struct conex*) malloc (sizeof(struct conex));
+	if (!result){
+		perror("Memory error");
+		exit(EXIT_FAILURE);
+	}
 	if(i==total){
 		if (file){
 			remove_spaces(file);							
@@ -210,9 +215,17 @@ struct conex* modelate_pipe(int i, int total,char *file, int output){
 	S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH );
 		} else{
 			out=dup(output);
+			if (out<0){
+				perror("File error");
+				exit(EXIT_FAILURE);
+			}
 		}
+		
 	}else{
-		pipe(fd);
+		if (pipe(fd)==-1){
+			perror("Pipe error");
+			exit(EXIT_FAILURE);
+		}
 		out=fd[1];
 		in=fd[0];
 	}
@@ -250,6 +263,10 @@ int process_input(char* file, int wait, int input){
 	} else{
 		in =dup(input);
 	}
+	if (in<0){
+		perror("File error");
+		exit(EXIT_FAILURE);
+	}
 	return in;
 }
 
@@ -274,9 +291,10 @@ int main(int argc, char *argv[])
 	char *text;
 	char *here_line;
 	char *end;
+	char *buff;
+	
 	struct conex *pipe_conex;
 	struct list *ins_list;
-	struct list *arg_list;
 	//struct cell *ins;
 	struct comands *list_comand;
 	struct comands *list_comand2;
@@ -292,12 +310,12 @@ int main(int argc, char *argv[])
 	int out;
 	int n_cmd;
 	int fd[2];
+	
+	int exit_cmd;
   
 	do{
 		
 		list_comand=NULL;
-		arg_list=(struct list *) malloc (sizeof(struct list));
-		free(arg_list);
 		text=read_line();
 		cmd_line=process_line(text);
 		if (cmd_line && cmd_line->comand){
@@ -309,15 +327,24 @@ int main(int argc, char *argv[])
 			
 			input=dup(0);
 			output=dup(1);
+			if (input<0 || output<0){
+				perror("Memory error");
+				exit(EXIT_FAILURE);
+			} 
 			//ext
-			if (cmd_line->here){
-				pipe(fd);
+			num=0;
+			printf("%d", cmd_line->here);
+			if (cmd_line->here && !num){
+				if (pipe(fd)==-1){
+					perror("Pipe error");
+					exit(EXIT_FAILURE);
+				}
 				out=fd[1];
 				in=fd[0];
 			}else{
 				in =process_input(cmd_line->in, cmd_line->wait, input);
 			}
-			num=0;	
+				
 			
 			while (list_comand2!=NULL){	
 				check_var=check_var_value(list_comand2->list->first->ins);
@@ -328,19 +355,27 @@ int main(int argc, char *argv[])
 					subs_env(list_comand2->list);
 					glob_t glob=expand_arg(list_comand2->list);
 					if(ownCmdHandler(glob)){
-						dup2(in,0);
+						if (dup2(in,0)<0){
+							perror("Redirection error");
+							exit(EXIT_FAILURE);
+						}
 						close (in);
 
 						pipe_conex=modelate_pipe(num, n_cmd-1,cmd_line->out,output);	
 						in=pipe_conex->input;
-						dup2(pipe_conex->output,1);
+						if (dup2(pipe_conex->output,1)<0){
+							perror("Redirection error");
+							exit(EXIT_FAILURE);
+						}
 						close(pipe_conex->output);
 						free(pipe_conex);
 				 		
 						child=fork();
 						switch(child){
 						case 0:
-							close(fd[1]);
+							if (cmd_line->here &&!num){
+								close(fd[1]);
+							}
 							son_code(glob);
 							free_all(list_comand);
 							free(cmd_line->comand);
@@ -361,15 +396,31 @@ int main(int argc, char *argv[])
 				}
 				list_comand2=list_comand2->next;
 			}
-			close(fd[0]);
-			dup2(input, 0);
-			dup2(output,1);
+			if (dup2(input, 0)<0 ||dup2(output,1)<0){
+				perror("Redirection error");
+				exit(EXIT_FAILURE);
+			}
 			if (cmd_line->here){
+				close(fd[0]);
 				end=strdup("}");
-				char *buff=read_line();
+				
+				if (!end){
+					perror("File error");
+					exit(EXIT_FAILURE);
+				}
+				
+				buff=read_line();
 				here_line=(char *)calloc(1,1);
+				if (!here_line){
+					perror("Memory error");
+					exit(EXIT_FAILURE);
+				}
 				while(strcmp(buff, end)){
 					here_line=realloc(here_line, strlen(here_line)+2+strlen(buff));
+					if (!here_line){
+						perror("Memory error");
+						exit(EXIT_FAILURE);
+					} 
 					strcat(here_line, buff);
 					strcat(here_line, "\n");
 					free(buff);
@@ -380,13 +431,15 @@ int main(int argc, char *argv[])
 				close(out);
 				free(here_line);
 				free(end);
-				dup2(input, 0);
-				dup2(output,1);
+				if (dup2(input, 0)<0 ||dup2(output,1)<0){
+					perror("Redirection error");
+					exit(EXIT_FAILURE);
+				}
 				close(input);
 				close(output);
 			}
 			if (cmd_line->wait){
-				int exit_cmd=wait_cmd_child(num, child);
+				exit_cmd=wait_cmd_child(num, child);
 				printf("SALIDA:%d\n", exit_cmd);
 			}
 			free_all(list_comand);

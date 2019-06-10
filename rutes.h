@@ -9,6 +9,8 @@ char* env_variable(char *word){
 	char *pointer=NULL;
 	char *var;
 	char *aux;
+	char *resolve;
+
 	if (word){
 		pointer=strchr(word,'$');
 	}
@@ -19,11 +21,15 @@ char* env_variable(char *word){
 			aux=(getenv(var));
 			if (aux){
 				free(word);
-				char *resolve=strdup(aux);
+				resolve=strdup(aux);
+				if (!resolve){
+					perror("Memory error");
+					exit(EXIT_FAILURE);
+				}
 				return resolve;
 			}else{
-				fprintf(stderr, "for failed");
-				exit(1);
+				perror("Envioroment error");
+				exit(EXIT_FAILURE);
 			}
 		}
 	}
@@ -32,20 +38,36 @@ char* env_variable(char *word){
 
 
 char* get_route(char *program){
-	char *path=strdup(getenv("PATH"));
+	char *path;
+	char *aux
 	char *aux2;
 	aux2=strdup(program);
+
+	if (!aux2){
+		perror("Memory error");
+		exit(EXIT_FAILURE);
+	}
 	
 	if(!access(aux2, F_OK)){
-		free(path);
-		return aux2;
+		free(aux2);
+		return program;
 	}
-		
 	free(aux2);
-	char *aux=strtok(path, ":");
+
+	path=strdup(getenv("PATH"));
+
+	if (!path){
+		perror("Memory error");
+		exit(EXIT_FAILURE);
+	}
+
+	aux=strtok(path, ":");
 	while (aux!=NULL){
 		aux2=calloc(1, strlen(aux)+strlen(program)+2);
-		
+		if (!aux2){
+			perror("Memory error");
+			exit(EXIT_FAILURE);
+		}
 		strcpy(aux2,aux);
 		strcat(aux2,"/");
 		strcat(aux2,program);
@@ -63,14 +85,11 @@ char* get_route(char *program){
 
 
 glob_t expand_arg(struct list *mylist){
-	
+	int i=1;
 	struct cell *iterator=mylist->first;
 	glob_t globbuf;
-	
-	glob(iterator->ins, GLOB_NOCHECK, NULL, &globbuf);
-	
-	int i=1;
-	
+
+	glob(iterator->ins, GLOB_NOCHECK, NULL, &globbuf);	
 	while (i<mylist->number_element){
 		iterator=iterator->next;
 		i++;
