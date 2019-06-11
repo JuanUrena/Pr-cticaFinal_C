@@ -29,8 +29,13 @@ void forkexample(){
 }
 int main() { 
 	//forkexample();
-	char *c="hola";
-	printf("%zd\n", strlen(c));
+	char *word="patata";
+	char *c=getenv("patata");
+	if (!c){
+	fprintf(stderr, "error:var %s does not exist", word);
+		exit(EXIT_FAILURE);
+	}
+	printf("%s\n", c);
 	return 0; 
 }
 

@@ -89,7 +89,6 @@ int ownCmdHandler(glob_t glob)
   
 	switch (switchOwnArg) { 
 	case 1: 
-		printf("CD");
 		char *home;
 		if (glob.gl_pathc>1){
 			home=glob.gl_pathv[1];
@@ -108,10 +107,9 @@ int ownCmdHandler(glob_t glob)
 int waitchilds(){
 	int childs;
 	int lastchild=0;
-	int result=1;
+	int result=0;
 	int  status;
-	do {	
-		childs=wait(&status);
+	while ((childs=wait(&status))>0){	
 		if(status == -1) {
 			perror("Error during wait()");
 			return(1);
@@ -120,7 +118,7 @@ int waitchilds(){
 			result=status;
 			lastchild=childs;
 		}
-	} while (childs > 0);
+	}
 
 	printf("\n-----FIN-----");
 	return(result);
@@ -237,11 +235,12 @@ struct conex* modelate_pipe(int i, int total,char *file, int output){
 
 struct param_cmd* process_line(char *cmd_line){
 	struct param_cmd *param_cmd_line;
-	
+	int exit_child=0;
 	if(cmd_line){
 		if (!strlen(cmd_line)){
-			free(cmd_line); 
-			exit(waitchilds());
+			free(cmd_line);
+			exit_child=waitchilds();
+			exit(exit_child);
 		}
 		replace_char(cmd_line, '\t', ' ');
 		param_cmd_line=param_line(cmd_line);
@@ -272,7 +271,6 @@ int process_input(char* file, int wait, int input){
 
 int wait_cmd_child(int num_child, int last_child)
 {
-	printf("ultimo %d \n",last_child);
 	int status;
 	int result=1;
 	for(int x=0;x<num_child;x++){ 
@@ -310,6 +308,7 @@ int main(int argc, char *argv[])
 	int out;
 	int n_cmd;
 	int fd[2];
+	int chr_written;
 	
 	int exit_cmd;
   
@@ -333,7 +332,6 @@ int main(int argc, char *argv[])
 			} 
 			//ext
 			num=0;
-			printf("%d", cmd_line->here);
 			if (cmd_line->here && !num){
 				if (pipe(fd)==-1){
 					perror("Pipe error");
@@ -384,8 +382,8 @@ int main(int argc, char *argv[])
 							free(cmd_line);
 							break;
 						case -1:
-							fprintf(stderr, "for failed");
-							return 1;
+							perror("Fork error");
+							exit(EXIT_FAILURE);
 							break;
 						}
 						num++;
@@ -426,7 +424,11 @@ int main(int argc, char *argv[])
 					free(buff);
 					buff=read_line();
 				}
-				write(out, here_line, strlen(here_line));
+				chr_written=write(out, here_line, strlen(here_line));
+				if (chr_written!=strlen(here_line)){
+					perror("Writing error");
+					exit(EXIT_FAILURE);
+				}
 				free(here_line);
 				close(out);
 				free(here_line);
@@ -440,7 +442,6 @@ int main(int argc, char *argv[])
 			}
 			if (cmd_line->wait){
 				exit_cmd=wait_cmd_child(num, child);
-				printf("SALIDA:%d\n", exit_cmd);
 			}
 			free_all(list_comand);
 			free(cmd_line->comand);
@@ -448,7 +449,7 @@ int main(int argc, char *argv[])
 			free(cmd_line->out);
 			free(cmd_line);				
 		}
-
+		
 	}while(1);
-	return 0;
-};
+	return exit_cmd;
+}

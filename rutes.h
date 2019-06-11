@@ -18,8 +18,10 @@ char* env_variable(char *word){
 	if (pointer){
 		var=strtok(pointer,"$");
 		if (var){
+			printf("\n%s\n", var);
 			aux=(getenv(var));
 			if (aux){
+				printf("\n%s\n", aux);
 				free(word);
 				resolve=strdup(aux);
 				if (!resolve){
@@ -28,7 +30,7 @@ char* env_variable(char *word){
 				}
 				return resolve;
 			}else{
-				perror("Envioroment error");
+				fprintf(stdout, "\nerror:var %s does not exist\n", word);
 				exit(EXIT_FAILURE);
 			}
 		}
