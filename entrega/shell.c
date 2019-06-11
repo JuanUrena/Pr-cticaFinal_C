@@ -494,7 +494,6 @@ int main(int argc, char *argv[])
 				}
 				free(here_line);
 				close(out);
-				free(here_line);
 				free(end);
 				if (dup2(input, 0)<0 ||dup2(output,1)<0){
 					perror("Redirection error");

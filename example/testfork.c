@@ -30,6 +30,10 @@ void forkexample(){
 int main() { 
 	//forkexample();
 	char *word="patata";
+	int a=255;
+	char b[sizeof("%d")];
+	sprintf(b, "%d",a);
+	setenv(word, b,1);
 	char *c=getenv("patata");
 	if (!c){
 	fprintf(stderr, "error:var %s does not exist", word);
@@ -39,3 +43,5 @@ int main() {
 	return 0; 
 }
 
+
+	setenv(own_env_var, exit_cmd, 1);
