@@ -27,7 +27,7 @@ void forkexample(){
 
 	// parent process because return value non-zero. 
 }
-int main() { 
+int main(int argc, char argv[]) { 
 	//forkexample();
 	char *word="patata";
 	int a=255;
